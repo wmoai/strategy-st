@@ -13,7 +13,7 @@ export const getRandomDeck = () => {
 };
 
 const getRandomUnits = (units: Unit[], count: number) => {
-  return Array(count).map(() => {
+  return Array.from({ length: count }).map(() => {
     const index = Math.floor(Math.random() * units.length);
     return units[index];
   });
