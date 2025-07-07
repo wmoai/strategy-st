@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
 
 import {
   getRandomDeck,
@@ -6,7 +6,7 @@ import {
   saveDeckToStorage,
 } from "./deckLogic";
 
-export const deckAtom = atom(() => {
+export const deckAtom = atomWithDefault(() => {
   const savedDeck = loadDeckFromStorage();
   if (savedDeck) {
     return savedDeck;

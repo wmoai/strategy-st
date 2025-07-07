@@ -2,9 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, Route, Routes } from "react-router-dom";
 
-import { Battle } from "./pages/Battle.tsx";
-import { Deck } from "./pages/Deck.tsx";
-import { Top } from "./pages/Top.tsx";
+import { Battle } from "./routes/Battle.tsx";
+import { Deck } from "./routes/Deck.tsx";
+import { Top } from "./routes/Top.tsx";
 
 import "./index.css";
 

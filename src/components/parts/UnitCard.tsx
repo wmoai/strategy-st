@@ -17,7 +17,7 @@ export const UnitCard: FC<Props> = ({ unit }) => {
       </header>
       <div className="flex items-center justify-center gap-4 px-3 py-1">
         <UnitImage unit={unit} isGray />
-        <dl className="grid grid-cols-[repeat(2,2fr_3fr)] gap-x-1 items-center [&_dd]:text-xl [&_dt]:text-gray-800">
+        <dl className="grid grid-cols-[repeat(2,20fr_31fr)] gap-x-1 items-center [&_dd]:text-xl [&_dt]:text-gray-800">
           <dt>力</dt>
           <dd>{unit.str}</dd>
           <dt>技</dt>
