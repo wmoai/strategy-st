@@ -15,4 +15,6 @@ export type Unit = {
   klass: number;
 };
 
-export const units: Unit[] = Object.values(json);
+export const units: Unit[] = json;
+
+export const findUnit = (id: number) => units.find((unit) => unit.id === id);

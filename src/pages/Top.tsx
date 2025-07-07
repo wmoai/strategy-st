@@ -1,20 +1,21 @@
+import { useAtom } from "jotai";
 import type { FC } from "react";
-import { Link } from "react-router-dom";
 
-import { DeckList } from "@/components/DeckList";
+import { TopNavigation } from "@/components/TopNavigation";
+import { UnitCardList } from "@/components/UnitCardList";
+import { deckAtom } from "@/features/deck/deckAtom";
 
 export const Top: FC = () => {
+  const [deck] = useAtom(deckAtom);
+
   return (
     <>
       <header>
-        <nav className="flex items-center justify-center gap-3 mt-10">
-          <Link to="/deck">DECK</Link>
-          <Link to="/battle">BATTLE</Link>
-        </nav>
+        <TopNavigation />
       </header>
       <main className="flex flex-col items-center justify-center gap-4 mt-10">
-        <h1 className="text-4xl">YOUR DECK</h1>
-        <DeckList />
+        <h1 className="text-3xl">YOUR DECK</h1>
+        <UnitCardList units={deck} row={3} />
       </main>
     </>
   );
