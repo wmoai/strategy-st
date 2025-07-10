@@ -1,17 +1,22 @@
-import type { FC, ReactNode } from "react";
+import { useAtomValue } from "jotai";
+import type { FC } from "react";
 
-type Props = {
-  navigation: ReactNode;
-  deckList: ReactNode;
-};
+import { deckAtom } from "@/features/deck/deckAtom";
 
-export const TopPage: FC<Props> = ({ navigation, deckList }) => {
+import { TopNavigation } from "../parts/TopNavigation";
+import { UnitCardList } from "../parts/UnitCardList";
+
+export const TopPage: FC = () => {
+  const deck = useAtomValue(deckAtom);
+
   return (
     <>
-      <header>{navigation}</header>
+      <header>
+        <TopNavigation />
+      </header>
       <main className="flex flex-col items-center justify-center gap-4 mt-10">
         <h1 className="text-3xl">YOUR DECK</h1>
-        {deckList}
+        <UnitCardList units={deck} />
       </main>
     </>
   );

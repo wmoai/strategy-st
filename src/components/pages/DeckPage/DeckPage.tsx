@@ -1,30 +1,22 @@
 import { clsx } from "clsx";
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 import { tv } from "tailwind-variants";
 
-import { DECK_SIZE } from "@/features/deck/useDeck";
+import { TopNavigation } from "@/components/parts/TopNavigation";
+import { UnitCardList } from "@/components/parts/UnitCardList";
+import { units } from "@/data/units";
+import { DECK_SIZE, useDeck } from "@/features/deck/useDeck";
 
-type Props = {
-  navigation: ReactNode;
-  deckList: ReactNode;
-  poolList: ReactNode;
-  deckNum: number;
-  isDeckEdited: boolean;
-  onSave: () => void;
-};
+export const DeckPage: FC = () => {
+  const { temporaryDeck, isDeckChanged, addUnit, removeUnit, saveDeck } =
+    useDeck();
+  const isDeckNumInvalid = temporaryDeck.length !== DECK_SIZE;
 
-export const DeckPage: FC<Props> = ({
-  navigation,
-  deckList,
-  poolList,
-  deckNum,
-  isDeckEdited,
-  onSave,
-}) => {
-  const isDeckNumInvalid = deckNum !== DECK_SIZE;
   return (
     <div className="flex flex-col h-screen">
-      <header>{navigation}</header>
+      <header>
+        <TopNavigation />
+      </header>
       <main className="grid grid-cols-2 mt-10 text-center overflow-hidden">
         <section className={clsx(columnSection({ side: "left" }), "bg-white")}>
           <header
@@ -36,19 +28,25 @@ export const DeckPage: FC<Props> = ({
             <h2 className={sectionHeading()}>YOUR DECK</h2>
             <div className="w-11 text-end">
               <span className={currentDeckNum({ invalid: isDeckNumInvalid })}>
-                {deckNum}
+                {temporaryDeck.length}
               </span>
               /{DECK_SIZE}
             </div>
             <button
-              disabled={isDeckNumInvalid || !isDeckEdited}
-              onClick={onSave}
-              className="cursor-pointer text-white bg-blue-400 focus:ring-2 rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              disabled={isDeckNumInvalid || !isDeckChanged}
+              onClick={() => saveDeck()}
+              className="cursor-pointer text-white bg-blue-500 rounded-lg px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               SAVE
             </button>
           </header>
-          <div className={listWrapper()}>{deckList}</div>
+          <div className={listWrapper()}>
+            <UnitCardList
+              units={temporaryDeck}
+              onClickUnit={(_, index) => removeUnit(index)}
+            />
+          </div>
         </section>
         <section
           className={clsx(columnSection({ side: "right" }), "bg-gray-200")}
@@ -56,7 +54,9 @@ export const DeckPage: FC<Props> = ({
           <header className={sectionHeader()}>
             <h2 className={sectionHeading()}>POOL</h2>
           </header>
-          <div className={listWrapper()}>{poolList}</div>
+          <div className={listWrapper()}>
+            <UnitCardList units={units} onClickUnit={(unit) => addUnit(unit)} />
+          </div>
         </section>
       </main>
     </div>

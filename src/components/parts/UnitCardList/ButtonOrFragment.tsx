@@ -7,7 +7,9 @@ type Props = {
 
 export const ButtonOrFragment: FC<Props> = ({ onClick, children }) => {
   return onClick ? (
-    <button onClick={onClick}>{children}</button>
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
   ) : (
     <>{children}</>
   );

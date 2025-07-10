@@ -12,7 +12,7 @@ type Props = {
 
 export const UnitCardList: FC<Props> = ({ units, onClickUnit }) => {
   return (
-    <ul className={`flex flex-wrap gap-2 justify-center max-w-2xl mx-4`}>
+    <ul className={`flex flex-wrap gap-2 justify-center max-w-xl mx-4`}>
       {units.map((unit, index) => (
         <li key={`${index}-${unit.id}`}>
           <ButtonOrFragment

@@ -18,7 +18,7 @@ export const UnitImage: FC<Props> = ({ unit, isBlue, isGray }) => {
         width: size,
         height: size,
         backgroundPositionX: -(unit.klass - 1) * size,
-        backgroundPositionY: isGray ? 0 : isBlue ? -size * 2 : -size,
+        backgroundPositionY: isGray ? 0 : isBlue ? -size : -size * 2,
       }}
     />
   );

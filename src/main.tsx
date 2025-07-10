@@ -2,9 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, Route, Routes } from "react-router-dom";
 
-import { Battle } from "./routes/Battle.tsx";
-import { Deck } from "./routes/Deck.tsx";
-import { Top } from "./routes/Top.tsx";
+import { BattlePage } from "./components/pages/BattlePage";
+import { DeckPage } from "./components/pages/DeckPage";
+import { TopPage } from "./components/pages/TopPage";
 
 import "./index.css";
 
@@ -12,9 +12,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <HashRouter>
       <Routes>
-        <Route path="/" element={<Top />} />
-        <Route path="/deck" element={<Deck />} />
-        <Route path="/battle" element={<Battle />} />
+        <Route path="/" element={<TopPage />} />
+        <Route path="/deck" element={<DeckPage />} />
+        <Route path="/battle" element={<BattlePage />} />
       </Routes>
     </HashRouter>
   </StrictMode>

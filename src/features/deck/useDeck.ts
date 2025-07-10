@@ -10,41 +10,40 @@ export const DECK_SIZE = 12;
 
 export const useDeck = () => {
   const [deck, setDeck] = useAtom(deckAtom);
-  const [savedDeckIds, setSavedDeckIds] = useState<number[]>(
-    deck.map((unit) => unit.id)
-  );
-  const isDeckEdited = useMemo(
+  const [temporaryDeck, setTemporaryDeck] = useState(deck);
+
+  const isDeckChanged = useMemo(
     () =>
-      deck.length !== savedDeckIds.length ||
-      deck.some((unit, index) => unit.id !== savedDeckIds[index]),
-    [deck, savedDeckIds]
+      deck.length !== temporaryDeck.length ||
+      deck.some((unit, index) => unit.id !== temporaryDeck[index].id),
+    [deck, temporaryDeck]
   );
 
   const addUnit = useCallback(
     (unit: Unit) => {
-      if (deck.length >= DECK_SIZE) {
+      if (temporaryDeck.length >= DECK_SIZE) {
         return;
       }
-      setDeck([...deck, unit]);
+      setTemporaryDeck([...temporaryDeck, unit]);
     },
-    [deck, setDeck]
+    [temporaryDeck]
   );
 
   const removeUnit = useCallback(
     (index: number) => {
-      setDeck(deck.filter((_, _index) => _index !== index));
+      setTemporaryDeck(temporaryDeck.filter((_, _index) => _index !== index));
     },
-    [deck, setDeck]
+    [temporaryDeck]
   );
 
   const saveDeck = useCallback(() => {
-    saveDeckToStorage(deck);
-    setSavedDeckIds(deck.map((unit) => unit.id));
-  }, [deck]);
+    setDeck(temporaryDeck);
+    saveDeckToStorage(temporaryDeck);
+  }, [setDeck, temporaryDeck]);
 
   return {
-    deck,
-    isDeckEdited,
+    temporaryDeck,
+    isDeckChanged,
     addUnit,
     removeUnit,
     saveDeck,
