@@ -1,6 +1,6 @@
 import json from "./json/unit.json";
 
-export type Unit = {
+export type UnitDatum = {
   name: string;
   id: number;
   hp: number;
@@ -15,6 +15,7 @@ export type Unit = {
   klass: number;
 };
 
-export const units: Unit[] = json;
+export const unitData: UnitDatum[] = json;
 
-export const findUnit = (id: number) => units.find((unit) => unit.id === id);
+export const findUnitDatum = (id: number) =>
+  unitData.find((unit) => unit.id === id);

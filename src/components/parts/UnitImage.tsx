@@ -1,9 +1,9 @@
 import type { FC } from "react";
 
-import type { Unit } from "@/data/units";
+import type { UnitDatum } from "@/data/unitData";
 
 type Props = {
-  unit: Unit;
+  unit: UnitDatum;
   isBlue?: boolean;
   isGray?: boolean;
 };

@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useMemo, useState, type FC } from "react";
 import { tv } from "tailwind-variants";
 
-import { units, type Unit } from "@/data/units";
+import { unitData, type UnitDatum } from "@/data/unitData";
 import { deckAtom } from "@/features/deck/deckAtom";
 import { getRandomUnits } from "@/features/deck/deckLogic";
 
@@ -11,7 +11,10 @@ import { SortieUnitCard } from "./SortieUnitCard";
 const COST_LIMIT = 24;
 
 type Props = {
-  onReady: (args: { playerUnits: Unit[]; enemyUnits: Unit[] }) => void;
+  onReady: (args: {
+    playerUnits: UnitDatum[];
+    enemyUnits: UnitDatum[];
+  }) => void;
 };
 
 export const Sortie: FC<Props> = ({ onReady }) => {
@@ -24,10 +27,10 @@ export const Sortie: FC<Props> = ({ onReady }) => {
     }, 0);
   }, [deck, selectedIndexes]);
   const enemies = useMemo(() => {
-    const common = units.filter((unit) => unit.cost === 3);
-    const veteran = units.filter((unit) => unit.cost === 4);
-    const hero = units.filter((unit) => unit.cost === 5);
-    return ([] as Unit[]).concat(
+    const common = unitData.filter((unit) => unit.cost === 3);
+    const veteran = unitData.filter((unit) => unit.cost === 4);
+    const hero = unitData.filter((unit) => unit.cost === 5);
+    return ([] as UnitDatum[]).concat(
       getRandomUnits(common, 3),
       getRandomUnits(veteran, 2),
       getRandomUnits(hero, 1)
@@ -36,11 +39,11 @@ export const Sortie: FC<Props> = ({ onReady }) => {
 
   const isCostInvalid = currentCost == 0 || currentCost > COST_LIMIT;
 
-  const playerSideArticle = sideArticleTv({
+  const playerSideSectionClass = sideSectionTv({
     side: isOffense ? "offense" : "defense",
     isCostInvalid,
   });
-  const enemySideArticle = sideArticleTv({
+  const enemySideSectionClass = sideSectionTv({
     side: isOffense ? "defense" : "offense",
   });
 
@@ -48,14 +51,14 @@ export const Sortie: FC<Props> = ({ onReady }) => {
     <>
       <h1 className="my-8 text-3xl font-bold text-center">出撃ユニット選択</h1>
       <div className="flex gap-6 justify-center">
-        <article className={playerSideArticle.base()}>
-          <header className={playerSideArticle.header()}>
-            <h2 className={playerSideArticle.heading()}>自軍</h2>
-            <div className={playerSideArticle.sideLabel()}>
+        <section className={playerSideSectionClass.base()}>
+          <header className={playerSideSectionClass.header()}>
+            <h2 className={playerSideSectionClass.heading()}>自軍</h2>
+            <div className={playerSideSectionClass.sideLabel()}>
               {isOffense ? "攻撃" : "防御"}
             </div>
           </header>
-          <ul className={playerSideArticle.list()}>
+          <ul className={playerSideSectionClass.list()}>
             {deck.map((unit, index) => {
               const isSelected = selectedIndexes.includes(index);
               return (
@@ -82,10 +85,10 @@ export const Sortie: FC<Props> = ({ onReady }) => {
               );
             })}
           </ul>
-          <footer className={playerSideArticle.footer()}>
+          <footer className={playerSideSectionClass.footer()}>
             <div>
               コスト
-              <span className={playerSideArticle.currentCost()}>
+              <span className={playerSideSectionClass.currentCost()}>
                 {currentCost}
               </span>
               /{COST_LIMIT}
@@ -93,7 +96,7 @@ export const Sortie: FC<Props> = ({ onReady }) => {
             <button
               type="button"
               disabled={isCostInvalid}
-              className={playerSideArticle.sortieButton()}
+              className={playerSideSectionClass.sortieButton()}
               onClick={() =>
                 onReady({
                   playerUnits: selectedIndexes.map(
@@ -106,28 +109,28 @@ export const Sortie: FC<Props> = ({ onReady }) => {
               出撃
             </button>
           </footer>
-        </article>
-        <article className={enemySideArticle.base()}>
-          <header className={enemySideArticle.header()}>
-            <h2 className={enemySideArticle.heading()}>敵軍</h2>
-            <div className={enemySideArticle.sideLabel()}>
+        </section>
+        <section className={enemySideSectionClass.base()}>
+          <header className={enemySideSectionClass.header()}>
+            <h2 className={enemySideSectionClass.heading()}>敵軍</h2>
+            <div className={enemySideSectionClass.sideLabel()}>
               {isOffense ? "防御" : "攻撃"}
             </div>
           </header>
-          <ul className={enemySideArticle.list()}>
+          <ul className={enemySideSectionClass.list()}>
             {enemies.map((unit, index) => (
               <li key={`${index}-${unit.id}`}>
                 <SortieUnitCard unit={unit} isOffense={!isOffense} />
               </li>
             ))}
           </ul>
-        </article>
+        </section>
       </div>
     </>
   );
 };
 
-const sideArticleTv = tv({
+const sideSectionTv = tv({
   slots: {
     base: "flex flex-col gap-4 border-1 p-2",
     header: "flex items-center justify-between",

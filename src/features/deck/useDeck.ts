@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import { useCallback, useMemo, useState } from "react";
 
-import type { Unit } from "@/data/units";
+import type { UnitDatum } from "@/data/unitData";
 
 import { deckAtom } from "./deckAtom";
 import { saveDeckToStorage } from "./deckLogic";
@@ -20,7 +20,7 @@ export const useDeck = () => {
   );
 
   const addUnit = useCallback(
-    (unit: Unit) => {
+    (unit: UnitDatum) => {
       if (temporaryDeck.length >= DECK_SIZE) {
         return;
       }

@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import { TopNavigation } from "@/components/parts/TopNavigation";
 import { UnitCardList } from "@/components/parts/UnitCardList";
-import { units } from "@/data/units";
+import { unitData } from "@/data/unitData";
 import { DECK_SIZE, useDeck } from "@/features/deck/useDeck";
 
 export const DeckPage: FC = () => {
@@ -18,16 +18,18 @@ export const DeckPage: FC = () => {
         <TopNavigation />
       </header>
       <main className="grid grid-cols-2 mt-10 text-center overflow-hidden">
-        <section className={clsx(columnSection({ side: "left" }), "bg-white")}>
+        <section
+          className={clsx(columnSectionTv({ side: "left" }), "bg-white")}
+        >
           <header
             className={clsx(
-              sectionHeader(),
+              sectionHeaderTv(),
               "flex flex-wrap items-center justify-center gap-x-4 gap-y-1"
             )}
           >
-            <h2 className={sectionHeading()}>YOUR DECK</h2>
+            <h2 className={sectionHeadingTv()}>YOUR DECK</h2>
             <div className="w-11 text-end">
-              <span className={currentDeckNum({ invalid: isDeckNumInvalid })}>
+              <span className={currentDeckNumTv({ invalid: isDeckNumInvalid })}>
                 {temporaryDeck.length}
               </span>
               /{DECK_SIZE}
@@ -41,7 +43,7 @@ export const DeckPage: FC = () => {
               SAVE
             </button>
           </header>
-          <div className={listWrapper()}>
+          <div className={listWrapperTv()}>
             <UnitCardList
               units={temporaryDeck}
               onClickUnit={(_, index) => removeUnit(index)}
@@ -49,13 +51,16 @@ export const DeckPage: FC = () => {
           </div>
         </section>
         <section
-          className={clsx(columnSection({ side: "right" }), "bg-gray-200")}
+          className={clsx(columnSectionTv({ side: "right" }), "bg-gray-200")}
         >
-          <header className={sectionHeader()}>
-            <h2 className={sectionHeading()}>POOL</h2>
+          <header className={sectionHeaderTv()}>
+            <h2 className={sectionHeadingTv()}>POOL</h2>
           </header>
-          <div className={listWrapper()}>
-            <UnitCardList units={units} onClickUnit={(unit) => addUnit(unit)} />
+          <div className={listWrapperTv()}>
+            <UnitCardList
+              units={unitData}
+              onClickUnit={(unit) => addUnit(unit)}
+            />
           </div>
         </section>
       </main>
@@ -63,7 +68,7 @@ export const DeckPage: FC = () => {
   );
 };
 
-const columnSection = tv({
+const columnSectionTv = tv({
   base: "overflow-auto pb-20",
   variants: {
     side: {
@@ -72,16 +77,16 @@ const columnSection = tv({
     },
   },
 });
-const sectionHeader = tv({
+const sectionHeaderTv = tv({
   base: "sticky top-0 py-5 bg-inherit",
 });
-const sectionHeading = tv({
+const sectionHeadingTv = tv({
   base: "text-4xl",
 });
-const listWrapper = tv({
+const listWrapperTv = tv({
   base: "justify-self-center",
 });
-const currentDeckNum = tv({
+const currentDeckNumTv = tv({
   base: "text-xl font-bold",
   variants: {
     invalid: {
