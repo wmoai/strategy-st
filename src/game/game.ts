@@ -19,8 +19,9 @@ export const runGame = async ({
     height,
   });
 
+  const cellSize = 40;
   const field = FieldModel.random();
-  app.stage.addChild(await createFieldContainer(field));
+  app.stage.addChild(await createFieldContainer({ field, cellSize }));
 
   /*
   const container = new Container();

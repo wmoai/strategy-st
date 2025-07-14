@@ -17,9 +17,13 @@ type Connection =
 type ConnectedTerrainTexture = Record<Connection, SplittedTerrainTexture>;
 type TextureResource = Record<TerrainId, ConnectedTerrainTexture>;
 
-const cellSize = 40;
-
-export const createFieldContainer = async (field: FieldModel) => {
+export const createFieldContainer = async ({
+  field,
+  cellSize,
+}: {
+  field: FieldModel;
+  cellSize: number;
+}) => {
   const terrainTexture = await createTerrainTexture();
 
   const container = new Container();
@@ -30,6 +34,7 @@ export const createFieldContainer = async (field: FieldModel) => {
       parts.forEach((part) => {
         container.addChild(
           createSprite({
+            cellSize,
             textureSet,
             neighborConnection,
             part,
@@ -85,11 +90,13 @@ const createTerrainTexture = async () => {
 };
 
 const createSprite = ({
+  cellSize,
   textureSet,
   neighborConnection,
   part,
   position: { x, y },
 }: {
+  cellSize: number;
   textureSet: ConnectedTerrainTexture;
   neighborConnection: NeighborConnection;
   part: keyof SplittedTerrainTexture;
