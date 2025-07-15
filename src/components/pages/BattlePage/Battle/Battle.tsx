@@ -23,8 +23,8 @@ export const Battle: FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-600">
-      <div className="h-[100px] m-auto">
+    <div className="flex flex-col h-screen bg-gray-600 overflow-hidden">
+      <div className="h-[100px] m-auto shrink-0">
         <div className="flex h-full">
           <button type="button">
             ターン
@@ -35,7 +35,7 @@ export const Battle: FC = () => {
           <div>info</div>
         </div>
       </div>
-      <div ref={canvasWrapperRef} className="flex-auto">
+      <div ref={canvasWrapperRef} className="flex-auto overflow-auto">
         <canvas ref={canvasRef} />
       </div>
     </div>

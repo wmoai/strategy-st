@@ -29,6 +29,56 @@ export class FieldModel {
     );
   }
 
+  /*
+  private createContainer() {}
+
+  private async createTerrainTexture() {
+    const originalTexture = await Assets.load("/strategy/terrain.png");
+    const spriteTileSize = 40;
+
+    const result: TextureResource = {};
+    for (
+      let xIndex = 0;
+      xIndex < originalTexture.width / spriteTileSize;
+      xIndex++
+    ) {
+      const connectionBuffer: SplittedTerrainTexture[] = [];
+
+      for (let yIndex = 0; yIndex < 5; yIndex++) {
+        const textureSetBuffer: Texture[] = [];
+        for (let v = 0; v < 2; v++) {
+          for (let h = 0; h < 2; h++) {
+            const texture = new Texture({
+              source: originalTexture,
+              frame: new Rectangle(
+                spriteTileSize * xIndex + (spriteTileSize / 2) * h,
+                spriteTileSize * yIndex + (spriteTileSize / 2) * v,
+                spriteTileSize / 2,
+                spriteTileSize / 2
+              ),
+            });
+            textureSetBuffer.push(texture);
+          }
+        }
+        connectionBuffer.push({
+          topLeft: textureSetBuffer[0],
+          topRight: textureSetBuffer[1],
+          bottomLeft: textureSetBuffer[2],
+          bottomRight: textureSetBuffer[3],
+        });
+      }
+      result[(xIndex + 1) as TerrainId] = {
+        none: connectionBuffer[0],
+        y: connectionBuffer[1],
+        x: connectionBuffer[2],
+        xy: connectionBuffer[3],
+        xyd: connectionBuffer[4],
+      };
+    }
+    return result;
+  }
+    */
+
   static random() {
     const fieldDatum = fieldData[Math.floor(Math.random() * fieldData.length)];
     return new FieldModel({ data: fieldDatum });
@@ -64,6 +114,10 @@ export class FieldModel {
   terrainId({ x, y }: Position) {
     const { terrain } = this.data;
     return terrain[y * this.data.width + x];
+  }
+
+  private cellId({ x, y }: Position): CellId {
+    return (y * this.data.width + x) as CellId;
   }
 
   neighborConnection(pos: Position): NeighborConnection {
@@ -108,10 +162,13 @@ export class FieldModel {
         return true;
       }
     }
+    const mountainGroupIds = [4, 5] as TerrainId[];
+    if (
+      mountainGroupIds.includes(fromTerrainId) &&
+      mountainGroupIds.includes(toTerrainId)
+    ) {
+      return true;
+    }
     return fromTerrainId === toTerrainId;
-  }
-
-  private cellId({ x, y }: Position): CellId {
-    return (y * this.data.width + x) as CellId;
   }
 }

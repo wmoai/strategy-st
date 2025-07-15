@@ -49,10 +49,14 @@ export const createFieldContainer = async ({
 
 const createTerrainTexture = async () => {
   const originalTexture = await Assets.load("/strategy/terrain.png");
-  const tileSize = 40;
+  const spriteTileSize = 40;
 
   const result: TextureResource = {};
-  for (let xIndex = 0; xIndex < originalTexture.width / tileSize; xIndex++) {
+  for (
+    let xIndex = 0;
+    xIndex < originalTexture.width / spriteTileSize;
+    xIndex++
+  ) {
     const connectionBuffer: SplittedTerrainTexture[] = [];
 
     for (let yIndex = 0; yIndex < 5; yIndex++) {
@@ -62,10 +66,10 @@ const createTerrainTexture = async () => {
           const texture = new Texture({
             source: originalTexture,
             frame: new Rectangle(
-              tileSize * xIndex + (tileSize / 2) * h,
-              tileSize * yIndex + (tileSize / 2) * v,
-              tileSize / 2,
-              tileSize / 2
+              spriteTileSize * xIndex + (spriteTileSize / 2) * h,
+              spriteTileSize * yIndex + (spriteTileSize / 2) * v,
+              spriteTileSize / 2,
+              spriteTileSize / 2
             ),
           });
           textureSetBuffer.push(texture);
