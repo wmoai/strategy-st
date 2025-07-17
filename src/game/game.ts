@@ -1,7 +1,9 @@
 import { Application, Container } from "pixi.js";
 
-import { createFieldContainer } from "./components/terrain";
-import { FieldModel } from "./models/FieldModel";
+import type { UnitId } from "@/data/unitData";
+
+import { FieldModel } from "./elements/field/FieldModel";
+import { UnitModel } from "./elements/unit/UnitModel";
 
 export const runGame = async ({
   canvas,
@@ -13,7 +15,7 @@ export const runGame = async ({
   height: number;
 }) => {
   const app = new Application();
-  app.init({
+  await app.init({
     canvas,
     width,
     height,
@@ -21,16 +23,24 @@ export const runGame = async ({
   });
 
   const cellSize = 40;
-  const field = FieldModel.random();
+  const field = await FieldModel.createRandom({ cellSize });
 
   const container = new Container();
-  container.addChild(await createFieldContainer({ field, cellSize }));
+  app.stage.addChild(container);
+
+  container.addChild(field.component.container);
+
+  const unit = await UnitModel.create({
+    unitId: 2 as UnitId,
+    cellSize,
+    isOffense: true,
+  });
+  container.addChild(unit.component.container);
+
   container.x = app.screen.width / 2;
   container.y = app.screen.height / 2;
   container.pivot.x = container.width / 2;
   container.pivot.y = container.height / 2;
-
-  app.stage.addChild(container);
 
   // Listen for animate update
   app.ticker.add((time) => {

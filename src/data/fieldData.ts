@@ -19,17 +19,7 @@ export type FieldDatum = {
   };
 };
 
-const parseJson = (json: typeof muhiJson): FieldDatum => ({
-  ...json,
-  id: json.id as FieldId,
-  terrain: json.terrain as TerrainId[],
-  info: {
-    oinit: json.info.oinit as CellId[],
-    dinit: json.info.oinit as CellId[],
-    base: json.info.oinit as CellId[],
-    turn: json.info.turn,
-  },
-});
+const parseJson = (json: unknown): FieldDatum => json as FieldDatum;
 
 export const fieldData: FieldDatum[] = [
   parseJson(muhiJson),
