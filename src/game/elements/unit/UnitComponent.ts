@@ -26,6 +26,7 @@ type ConstructorParams = {
 export class UnitComponent {
   private static textures: Record<UnitId, UnitTexture> | null = null;
   private readonly unitId: UnitId;
+  private readonly cellSize: number;
   private readonly isOffense: boolean;
   readonly container: Container;
   private readonly components: {
@@ -42,6 +43,7 @@ export class UnitComponent {
       throw new Error("invalid unitId");
     }
     this.unitId = unitId;
+    this.cellSize = cellSize;
     this.isOffense = isOffense;
     this.maxHp = data.hp;
     this.hpBarWidth = cellSize - 4;
@@ -109,11 +111,6 @@ export class UnitComponent {
     UnitComponent.textures = result;
   }
 
-  update(state: UnitState) {
-    this.updateUnitSprite(state);
-    this.updateGreenLineWidth(state);
-  }
-
   private updateUnitSprite(state: UnitState) {
     if (!UnitComponent.textures) {
       return;
@@ -124,6 +121,10 @@ export class UnitComponent {
       : this.isOffense
       ? unitTexture.red
       : unitTexture.blue;
+    this.container.position.set(
+      state.x * this.cellSize,
+      state.y * this.cellSize
+    );
   }
 
   private updateGreenLineWidth(state: UnitState) {
@@ -131,5 +132,10 @@ export class UnitComponent {
       (this.hpBarWidth * state.currentHp) / this.maxHp,
       0
     );
+  }
+
+  update(state: UnitState) {
+    this.updateUnitSprite(state);
+    this.updateGreenLineWidth(state);
   }
 }

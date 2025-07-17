@@ -3,6 +3,8 @@ import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 import { UnitComponent } from "./UnitComponent";
 
 export type UnitState = {
+  x: number;
+  y: number;
   isActed: boolean;
   currentHp: number;
 };
@@ -29,6 +31,8 @@ export class UnitModel {
     this.cellSize = cellSize;
     this.isOffense = isOffense;
     this.state = {
+      x: 0,
+      y: 0,
       isActed: false,
       currentHp: data.hp,
     };
