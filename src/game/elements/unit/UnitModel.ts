@@ -1,3 +1,5 @@
+import type { Container } from "pixi.js";
+
 import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
@@ -10,33 +12,23 @@ export type UnitState = {
   currentHp: number;
 };
 
-type ConstructorParams = {
-  unitId: UnitId;
-  cellSize: number;
-  isOffense: boolean;
-  position: Position;
-};
-
 export class UnitModel {
   private readonly data: UnitDatum;
-  readonly cellSize: number;
-  readonly isOffense: boolean;
   state: UnitState;
-  component!: UnitComponent;
+  private component!: UnitComponent;
 
   private constructor({
     unitId,
-    cellSize,
-    isOffense,
     position,
-  }: ConstructorParams) {
+  }: {
+    unitId: UnitId;
+    position: Position;
+  }) {
     const data = findUnitDatum(unitId);
     if (!data) {
       throw new Error("invalid unitId");
     }
     this.data = data;
-    this.cellSize = cellSize;
-    this.isOffense = isOffense;
     this.state = {
       ...position,
       currentHp: data.hp,
@@ -44,10 +36,28 @@ export class UnitModel {
     };
   }
 
-  static async create(args: ConstructorParams) {
-    const model = new UnitModel(args);
-    model.component = await UnitComponent.create(args);
+  static async create({
+    unitId,
+    cellSize,
+    isOffense,
+    position,
+  }: {
+    unitId: UnitId;
+    cellSize: number;
+    isOffense: boolean;
+    position: Position;
+  }) {
+    const model = new UnitModel({ unitId, position });
+    model.component = await UnitComponent.create({
+      unitId,
+      cellSize,
+      isOffense,
+    });
     model.component.update(model.state);
     return model;
+  }
+
+  addComponentToContainer(container: Container) {
+    container.addChild(this.component.container);
   }
 }

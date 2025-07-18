@@ -4,6 +4,7 @@ import type { UnitDatum, UnitId } from "@/data/unitData";
 
 import { FieldModel } from "./elements/field/FieldModel";
 import { UnitModel } from "./elements/unit/UnitModel";
+import { CursorModel } from "./elements/cursor/CursorModel";
 
 export const runGame = async ({
   canvas,
@@ -30,16 +31,16 @@ export const runGame = async ({
   });
 
   const cellSize = 40;
-  const field = await FieldModel.createRandom({ cellSize });
+  const fieldModel = await FieldModel.createRandom({ cellSize });
 
   const container = new Container();
   app.stage.addChild(container);
 
-  container.addChild(field.component.container);
+  fieldModel.addComponentToContainer(container);
 
   const playerInitPos = isPlayerOffense
-    ? field.offenseInitPositions
-    : field.defenseInitPositions;
+    ? fieldModel.offenseInitPositions
+    : fieldModel.defenseInitPositions;
   const playerUnitModels = await Promise.all(
     sortie.player.map(async (unitData, index) => {
       const position = playerInitPos[index];
@@ -49,14 +50,14 @@ export const runGame = async ({
         isOffense: isPlayerOffense,
         position,
       });
-      container.addChild(unitModel.component.container);
+      unitModel.addComponentToContainer(container);
       return unitModel;
     })
   );
 
   const enemyInitPos = isPlayerOffense
-    ? field.defenseInitPositions
-    : field.offenseInitPositions;
+    ? fieldModel.defenseInitPositions
+    : fieldModel.offenseInitPositions;
   const enemyUnitModels = await Promise.all(
     sortie.enemy.map(async (unitData, index) => {
       const position = enemyInitPos[index];
@@ -66,10 +67,13 @@ export const runGame = async ({
         isOffense: !isPlayerOffense,
         position,
       });
-      container.addChild(unitModel.component.container);
+      unitModel.addComponentToContainer(container);
       return unitModel;
     })
   );
+
+  const cursorModel = new CursorModel({ cellSize });
+  cursorModel.addComponentToContainer(container);
 
   container.x = app.screen.width / 2;
   container.y = app.screen.height / 2;

@@ -1,3 +1,5 @@
+import type { Container } from "pixi.js";
+
 import { fieldData, type CellId, type FieldDatum } from "@/data/fieldData";
 import type { TerrainId } from "@/data/terrainData";
 
@@ -12,7 +14,7 @@ export class FieldModel {
   readonly offenseInitPositions: Position[];
   readonly defenseInitPositions: Position[];
   readonly defenseBasePositions: Position[];
-  component!: FieldComponent;
+  private component!: FieldComponent;
 
   private constructor({ data }: { data: FieldDatum }) {
     this.data = data;
@@ -79,5 +81,9 @@ export class FieldModel {
   terrainId({ x, y }: Position) {
     const { terrain } = this.data;
     return terrain[y * this.data.width + x];
+  }
+
+  addComponentToContainer(container: Container) {
+    container.addChild(this.component.container);
   }
 }
