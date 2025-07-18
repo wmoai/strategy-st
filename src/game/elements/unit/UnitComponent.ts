@@ -7,6 +7,7 @@ import {
   Texture,
 } from "pixi.js";
 
+import type { KlassId } from "@/data/klassData";
 import { findUnitDatum, type UnitId } from "@/data/unitData";
 
 import type { UnitState } from "./UnitModel";
@@ -24,8 +25,8 @@ type ConstructorParams = {
 };
 
 export class UnitComponent {
-  private static textures: Record<UnitId, UnitTexture> | null = null;
-  private readonly unitId: UnitId;
+  private static textures: Record<KlassId, UnitTexture> | null = null;
+  private readonly klassId: KlassId;
   private readonly cellSize: number;
   private readonly isOffense: boolean;
   readonly container: Container;
@@ -42,7 +43,7 @@ export class UnitComponent {
     if (!data) {
       throw new Error("invalid unitId");
     }
-    this.unitId = unitId;
+    this.klassId = data.klass;
     this.cellSize = cellSize;
     this.isOffense = isOffense;
     this.maxHp = data.hp;
@@ -85,10 +86,10 @@ export class UnitComponent {
     const spriteImage = await Assets.load("/strategy/units.png");
     const spriteTileSize = 50;
 
-    const result: Record<UnitId, UnitTexture> = {};
+    const result: Record<KlassId, UnitTexture> = {};
 
     for (let w = 0; w < spriteImage.width / spriteTileSize; w++) {
-      const unitId = (w + 1) as UnitId;
+      const klassId = (w + 1) as KlassId;
       const buff: Texture[] = [];
       for (let h = 0; h < 3; h++) {
         const texture = new Texture({
@@ -102,7 +103,7 @@ export class UnitComponent {
         });
         buff.push(texture);
       }
-      result[unitId] = {
+      result[klassId] = {
         gray: buff[0],
         blue: buff[1],
         red: buff[2],
@@ -115,7 +116,7 @@ export class UnitComponent {
     if (!UnitComponent.textures) {
       return;
     }
-    const unitTexture = UnitComponent.textures[this.unitId];
+    const unitTexture = UnitComponent.textures[this.klassId];
     this.components.unit.texture = state.isActed
       ? unitTexture.gray
       : this.isOffense

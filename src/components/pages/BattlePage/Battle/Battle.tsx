@@ -1,11 +1,14 @@
+import { useAtomValue } from "jotai";
 import { useEffect, useRef, type FC } from "react";
 
+import { battleAtom } from "@/features/battle/battleAtom";
 import { runGame } from "@/game";
 
 export const Battle: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   const isRunning = useRef(false);
+  const battleState = useAtomValue(battleAtom);
 
   useEffect(() => {
     if (!canvasRef.current || !canvasWrapperRef.current) {
@@ -19,8 +22,10 @@ export const Battle: FC = () => {
       canvas: canvasRef.current,
       width: canvasWrapperRef.current.clientWidth,
       height: canvasWrapperRef.current.clientHeight,
+      isPlayerOffense: battleState.isOffense,
+      sortie: battleState.sortie,
     });
-  }, []);
+  }, [battleState.isOffense, battleState.sortie]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-600 overflow-hidden">

@@ -1,6 +1,7 @@
 import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
+import type { Position } from "../field/FieldModel";
 
 export type UnitState = {
   x: number;
@@ -13,6 +14,7 @@ type ConstructorParams = {
   unitId: UnitId;
   cellSize: number;
   isOffense: boolean;
+  position: Position;
 };
 
 export class UnitModel {
@@ -22,7 +24,12 @@ export class UnitModel {
   state: UnitState;
   component!: UnitComponent;
 
-  private constructor({ unitId, cellSize, isOffense }: ConstructorParams) {
+  private constructor({
+    unitId,
+    cellSize,
+    isOffense,
+    position,
+  }: ConstructorParams) {
     const data = findUnitDatum(unitId);
     if (!data) {
       throw new Error("invalid unitId");
@@ -31,10 +38,9 @@ export class UnitModel {
     this.cellSize = cellSize;
     this.isOffense = isOffense;
     this.state = {
-      x: 0,
-      y: 0,
-      isActed: false,
+      ...position,
       currentHp: data.hp,
+      isActed: false,
     };
   }
 

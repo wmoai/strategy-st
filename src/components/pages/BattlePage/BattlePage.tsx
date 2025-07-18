@@ -1,18 +1,13 @@
-import { useState, type FC } from "react";
+import { useAtomValue } from "jotai";
+import { type FC } from "react";
+
+import { battleAtom } from "@/features/battle/battleAtom";
 
 import { Battle } from "./Battle";
 import { Sortie } from "./Sortie";
 
 export const BattlePage: FC = () => {
-  const [step, setStep] = useState<"sortie" | "battle">("sortie");
+  const { step } = useAtomValue(battleAtom);
 
-  return step === "sortie" ? (
-    <Sortie
-      onReady={() => {
-        setStep("battle");
-      }}
-    />
-  ) : (
-    <Battle />
-  );
+  return step === "sortie" ? <Sortie /> : <Battle />;
 };

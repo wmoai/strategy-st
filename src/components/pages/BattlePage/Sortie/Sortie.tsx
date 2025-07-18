@@ -1,8 +1,9 @@
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useMemo, useState, type FC } from "react";
 import { tv } from "tailwind-variants";
 
 import { unitData, type UnitDatum } from "@/data/unitData";
+import { battleAtom } from "@/features/battle/battleAtom";
 import { deckAtom } from "@/features/deck/deckAtom";
 import { getRandomUnits } from "@/features/deck/deckLogic";
 
@@ -10,14 +11,7 @@ import { SortieUnitCard } from "./SortieUnitCard";
 
 const COST_LIMIT = 24;
 
-type Props = {
-  onReady: (args: {
-    playerUnits: UnitDatum[];
-    enemyUnits: UnitDatum[];
-  }) => void;
-};
-
-export const Sortie: FC<Props> = ({ onReady }) => {
+export const Sortie: FC = () => {
   const deck = useAtomValue(deckAtom);
   const isOffense = useMemo(() => Math.random() >= 0.5, []);
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([]);
@@ -36,6 +30,7 @@ export const Sortie: FC<Props> = ({ onReady }) => {
       getRandomUnits(hero, 1)
     );
   }, []);
+  const setBattleAtom = useSetAtom(battleAtom);
 
   const isCostInvalid = currentCost == 0 || currentCost > COST_LIMIT;
 
@@ -98,11 +93,15 @@ export const Sortie: FC<Props> = ({ onReady }) => {
               disabled={isCostInvalid}
               className={playerSideSectionClass.sortieButton()}
               onClick={() =>
-                onReady({
-                  playerUnits: selectedIndexes.map(
-                    (selectedIndex) => deck[selectedIndex]
-                  ),
-                  enemyUnits: enemies,
+                setBattleAtom({
+                  step: "battle",
+                  isOffense,
+                  sortie: {
+                    player: selectedIndexes.map(
+                      (selectedIndex) => deck[selectedIndex]
+                    ),
+                    enemy: enemies,
+                  },
                 })
               }
             >
@@ -120,7 +119,7 @@ export const Sortie: FC<Props> = ({ onReady }) => {
           <ul className={enemySideSectionClass.list()}>
             {enemies.map((unit, index) => (
               <li key={`${index}-${unit.id}`}>
-                <SortieUnitCard unit={unit} isOffense={!isOffense} />
+                <SortieUnitCard unit={unit} isOffense={isOffense} />
               </li>
             ))}
           </ul>

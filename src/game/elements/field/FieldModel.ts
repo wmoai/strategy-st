@@ -9,9 +9,9 @@ export class FieldModel {
   private readonly data: FieldDatum;
   readonly turn: number;
   readonly rows: TerrainId[][];
-  readonly offenseInitPoses: Position[];
-  readonly defenseInitPoses: Position[];
-  readonly defenseBasePoses: Position[];
+  readonly offenseInitPositions: Position[];
+  readonly defenseInitPositions: Position[];
+  readonly defenseBasePositions: Position[];
   component!: FieldComponent;
 
   private constructor({ data }: { data: FieldDatum }) {
@@ -21,13 +21,13 @@ export class FieldModel {
     this.rows = Array.from({ length: width }).map((_, i) =>
       terrain.slice(i * width, i * width + width)
     );
-    this.offenseInitPoses = data.info.oinit.map((cellId) =>
+    this.offenseInitPositions = data.info.oinit.map((cellId) =>
       this.position(cellId)
     );
-    this.defenseInitPoses = data.info.dinit.map((cellId) =>
+    this.defenseInitPositions = data.info.dinit.map((cellId) =>
       this.position(cellId)
     );
-    this.defenseBasePoses = data.info.base.map((cellId) =>
+    this.defenseBasePositions = data.info.base.map((cellId) =>
       this.position(cellId)
     );
   }
