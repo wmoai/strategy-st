@@ -5,6 +5,7 @@ import type { Position } from "../field/FieldModel";
 export class CursorModel {
   private readonly cellSize: number;
   private readonly graphic: Graphics;
+  private time: number = 0;
 
   constructor({ cellSize }: { cellSize: number }) {
     this.cellSize = cellSize;
@@ -37,5 +38,23 @@ export class CursorModel {
 
   addComponentToContainer(container: Container) {
     container.addChild(this.graphic);
+  }
+
+  animate(deltaTime: number) {
+    this.time += deltaTime;
+    const totalLength = 64;
+    const unit = totalLength / 16;
+    if (this.time > totalLength) {
+      this.time -= totalLength;
+    }
+    if (this.time < unit) {
+      this.graphic.scale = 1.05;
+    } else if (this.time < unit * 8) {
+      this.graphic.scale = 1.1;
+    } else if (this.time < unit * 9) {
+      this.graphic.scale = 1.05;
+    } else {
+      this.graphic.scale = 1;
+    }
   }
 }

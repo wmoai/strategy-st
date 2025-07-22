@@ -1,12 +1,12 @@
 import { Application, Container } from "pixi.js";
 
-import type { UnitDatum, UnitId } from "@/data/unitData";
+import type { UnitDatum } from "@/data/unitData";
 
+import { CursorModel } from "./elements/cursor/CursorModel";
 import { FieldModel } from "./elements/field/FieldModel";
 import { UnitModel } from "./elements/unit/UnitModel";
-import { CursorModel } from "./elements/cursor/CursorModel";
 
-export const runGame = async ({
+export default async ({
   canvas,
   width,
   height,
@@ -74,6 +74,7 @@ export const runGame = async ({
 
   const cursorModel = new CursorModel({ cellSize });
   cursorModel.addComponentToContainer(container);
+  fieldModel.onHover((pos) => cursorModel.update(pos));
 
   container.x = app.screen.width / 2;
   container.y = app.screen.height / 2;
@@ -85,5 +86,6 @@ export const runGame = async ({
     // Continuously rotate the container!
     // * use delta to create frame-independent transform *
     // container.rotation -= 0.01 * time.deltaTime;
+    cursorModel.animate(time.deltaTime);
   });
 };

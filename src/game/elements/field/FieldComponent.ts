@@ -36,10 +36,18 @@ export class FieldComponent {
   static terrainTextures: Record<TerrainId, ConnectedTerrainTexture> | null =
     null;
   private readonly data: FieldDatum;
+  private readonly cellSize: number;
   readonly container: Container;
 
-  private constructor({ data }: { data: FieldDatum }) {
+  private constructor({
+    data,
+    cellSize,
+  }: {
+    data: FieldDatum;
+    cellSize: number;
+  }) {
     this.data = data;
+    this.cellSize = cellSize;
     this.container = new Container();
   }
 
@@ -50,7 +58,7 @@ export class FieldComponent {
     data: FieldDatum;
     cellSize: number;
   }) {
-    const component = new FieldComponent({ data });
+    const component = new FieldComponent({ data, cellSize });
     await component.setSprites({ cellSize });
     return component;
   }
@@ -231,5 +239,16 @@ export class FieldComponent {
       return true;
     }
     return fromTerrainId === toTerrainId;
+  }
+
+  onPointerMove(callback: (position: Position) => void) {
+    this.container.eventMode = "static";
+    this.container.on("pointermove", (e) => {
+      const localPos = e.getLocalPosition(this.container);
+      callback({
+        x: Math.floor(localPos.x / this.cellSize),
+        y: Math.floor(localPos.y / this.cellSize),
+      });
+    });
   }
 }

@@ -86,4 +86,8 @@ export class FieldModel {
   addComponentToContainer(container: Container) {
     container.addChild(this.component.container);
   }
+
+  onHover(callback: (position: Position) => void) {
+    this.component.onPointerMove(callback);
+  }
 }
