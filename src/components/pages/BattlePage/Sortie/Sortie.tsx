@@ -3,7 +3,7 @@ import { useMemo, useState, type FC } from "react";
 import { tv } from "tailwind-variants";
 
 import { unitData, type UnitDatum } from "@/data/unitData";
-import { battleAtom } from "@/features/battle/battleAtom";
+import { battleStepAtom, sortieAtom } from "@/features/battle/battleAtom";
 import { deckAtom } from "@/features/deck/deckAtom";
 import { getRandomUnits } from "@/features/deck/deckLogic";
 
@@ -30,7 +30,8 @@ export const Sortie: FC = () => {
       getRandomUnits(hero, 1)
     );
   }, []);
-  const setBattleAtom = useSetAtom(battleAtom);
+  const setBattleStep = useSetAtom(battleStepAtom);
+  const setSortie = useSetAtom(sortieAtom);
 
   const isCostInvalid = currentCost == 0 || currentCost > COST_LIMIT;
 
@@ -92,18 +93,18 @@ export const Sortie: FC = () => {
               type="button"
               disabled={isCostInvalid}
               className={playerSideSectionClass.sortieButton()}
-              onClick={() =>
-                setBattleAtom({
-                  step: "battle",
+              onClick={() => {
+                setBattleStep("battle");
+                setSortie({
                   isOffense,
-                  sortie: {
+                  units: {
                     player: selectedIndexes.map(
                       (selectedIndex) => deck[selectedIndex]
                     ),
                     enemy: enemies,
                   },
-                })
-              }
+                });
+              }}
             >
               出撃
             </button>

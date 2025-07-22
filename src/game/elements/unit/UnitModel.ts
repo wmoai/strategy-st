@@ -13,7 +13,7 @@ export type UnitState = {
 };
 
 export class UnitModel {
-  private readonly data: UnitDatum;
+  readonly data: UnitDatum;
   state: UnitState;
   private component!: UnitComponent;
 
@@ -60,4 +60,13 @@ export class UnitModel {
   addComponentToContainer(container: Container) {
     container.addChild(this.component.container);
   }
+
+  // onHover(callback: (unit: UnitDatum) => void) {
+  //   const { container } = this.component;
+  //   container.eventMode = "static";
+  //   container.on("pointerenter", () => {
+  //     callback(this.data);
+  //     console.log(this.data);
+  //   });
+  // }
 }

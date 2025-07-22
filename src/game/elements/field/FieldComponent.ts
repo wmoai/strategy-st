@@ -1,4 +1,12 @@
-import { Assets, Container, Rectangle, Sprite, Texture } from "pixi.js";
+import {
+  Assets,
+  BlurFilter,
+  Container,
+  Graphics,
+  Rectangle,
+  Sprite,
+  Texture,
+} from "pixi.js";
 
 import type { FieldDatum } from "@/data/fieldData";
 import type { TerrainId } from "@/data/terrainData";
@@ -36,18 +44,10 @@ export class FieldComponent {
   static terrainTextures: Record<TerrainId, ConnectedTerrainTexture> | null =
     null;
   private readonly data: FieldDatum;
-  private readonly cellSize: number;
   readonly container: Container;
 
-  private constructor({
-    data,
-    cellSize,
-  }: {
-    data: FieldDatum;
-    cellSize: number;
-  }) {
+  private constructor({ data }: { data: FieldDatum }) {
     this.data = data;
-    this.cellSize = cellSize;
     this.container = new Container();
   }
 
@@ -58,7 +58,7 @@ export class FieldComponent {
     data: FieldDatum;
     cellSize: number;
   }) {
-    const component = new FieldComponent({ data, cellSize });
+    const component = new FieldComponent({ data });
     await component.setSprites({ cellSize });
     return component;
   }
@@ -92,6 +92,33 @@ export class FieldComponent {
         });
       });
     });
+
+    const shadowMargin = cellSize / 4;
+    const edgeShadow = new Graphics()
+      .rect(
+        -cellSize,
+        -cellSize,
+        width * cellSize + cellSize * 2,
+        this.data.height * cellSize + cellSize * 2
+      )
+      .fill({ color: 0, alpha: 0.3 })
+      .rect(
+        cellSize - shadowMargin,
+        cellSize - shadowMargin,
+        (width - 2) * cellSize + shadowMargin * 2,
+        (this.data.height - 2) * cellSize + shadowMargin * 2
+      )
+      .cut();
+    edgeShadow.filters = [new BlurFilter()];
+    this.container.addChild(edgeShadow);
+
+    const containerMask = new Graphics()
+      .rect(0, 0, width * cellSize, this.data.height * cellSize)
+      .fill(0);
+    this.container.mask = containerMask;
+    this.container.addChild(containerMask);
+
+    this.container.cacheAsTexture(true);
   }
 
   private createSprite({
@@ -160,6 +187,8 @@ export class FieldComponent {
             const texture = new Texture({
               source: spriteImage,
               frame: new Rectangle(
+                // spriteTileSize * xIndex + (spriteTileSize / 2) * h + 0.5,
+                // spriteTileSize * yIndex + (spriteTileSize / 2) * v - 0.5,
                 spriteTileSize * xIndex + (spriteTileSize / 2) * h,
                 spriteTileSize * yIndex + (spriteTileSize / 2) * v,
                 spriteTileSize / 2,
@@ -239,16 +268,5 @@ export class FieldComponent {
       return true;
     }
     return fromTerrainId === toTerrainId;
-  }
-
-  onPointerMove(callback: (position: Position) => void) {
-    this.container.eventMode = "static";
-    this.container.on("pointermove", (e) => {
-      const localPos = e.getLocalPosition(this.container);
-      callback({
-        x: Math.floor(localPos.x / this.cellSize),
-        y: Math.floor(localPos.y / this.cellSize),
-      });
-    });
   }
 }

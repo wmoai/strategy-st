@@ -16,6 +16,19 @@ export class CursorModel {
     const thickness = cellSize / 12;
 
     this.graphic = new Graphics()
+      .moveTo(left, length)
+      .lineTo(thickness, length)
+      .moveTo(thickness, thickness)
+      .lineTo(length, thickness)
+      .moveTo(cellSize - length, thickness)
+      .lineTo(cellSize - thickness, thickness)
+      .moveTo(cellSize - thickness, length)
+      .lineTo(cellSize, length)
+      .moveTo(left, cellSize)
+      .lineTo(length, cellSize)
+      .moveTo(cellSize - length, cellSize)
+      .lineTo(cellSize, cellSize)
+      .stroke({ width: 2, color: 0x333333 })
       .rect(left, top, length, thickness)
       .rect(left, top, thickness, length)
       .rect(cellSize - length, top, length, thickness)
@@ -24,16 +37,16 @@ export class CursorModel {
       .rect(left, cellSize - thickness, length, thickness)
       .rect(cellSize - thickness, cellSize - length, thickness, length)
       .rect(cellSize - length, cellSize - thickness, length, thickness)
-      .fill(0xffffff);
+      .fill(0xeeeeee);
     this.graphic.pivot.x = cellSize / 2;
     this.graphic.pivot.y = cellSize / 2;
 
-    this.update({ x: 0, y: 0 });
+    this.update({ x: 1, y: 1 });
   }
 
   update({ x, y }: Position) {
     this.graphic.x = x * this.cellSize + this.cellSize / 2;
-    this.graphic.y = y * this.cellSize + this.cellSize / 2;
+    this.graphic.y = y * this.cellSize + this.cellSize / 2 - 1;
   }
 
   addComponentToContainer(container: Container) {

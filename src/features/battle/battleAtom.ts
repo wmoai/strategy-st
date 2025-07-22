@@ -2,20 +2,21 @@ import { atom } from "jotai";
 
 import type { UnitDatum } from "@/data/unitData";
 
-type BattleAtom = {
-  step: "sortie" | "battle";
+export const battleStepAtom = atom<"sortie" | "battle">("sortie");
+
+export const sortieAtom = atom<{
   isOffense: boolean;
-  sortie: {
+  units: {
     player: UnitDatum[];
     enemy: UnitDatum[];
   };
-};
-
-export const battleAtom = atom<BattleAtom>({
-  step: "sortie",
+}>({
   isOffense: true,
-  sortie: {
+  units: {
     player: [],
     enemy: [],
   },
 });
+
+export const hoveredUnitAtom = atom<UnitDatum | undefined>();
+export const hoveredTerrainAtom = atom<UnitDatum | undefined>();

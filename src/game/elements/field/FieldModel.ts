@@ -9,15 +9,24 @@ export type Position = { x: number; y: number };
 
 export class FieldModel {
   private readonly data: FieldDatum;
+  private readonly cellSize: number;
   readonly turn: number;
   readonly rows: TerrainId[][];
   readonly offenseInitPositions: Position[];
   readonly defenseInitPositions: Position[];
   readonly defenseBasePositions: Position[];
   private component!: FieldComponent;
+  private hoveredPosition?: Position;
 
-  private constructor({ data }: { data: FieldDatum }) {
+  private constructor({
+    data,
+    cellSize,
+  }: {
+    data: FieldDatum;
+    cellSize: number;
+  }) {
     this.data = data;
+    this.cellSize = cellSize;
     this.turn = data.info.turn[0];
     const { width, terrain } = data;
     this.rows = Array.from({ length: width }).map((_, i) =>
@@ -36,7 +45,7 @@ export class FieldModel {
 
   static async createRandom({ cellSize }: { cellSize: number }) {
     const fieldDatum = fieldData[Math.floor(Math.random() * fieldData.length)];
-    const model = new FieldModel({ data: fieldDatum });
+    const model = new FieldModel({ data: fieldDatum, cellSize });
     model.component = await FieldComponent.create({
       data: fieldDatum,
       cellSize,
@@ -88,6 +97,24 @@ export class FieldModel {
   }
 
   onHover(callback: (position: Position) => void) {
-    this.component.onPointerMove(callback);
+    const { container } = this.component;
+    container.eventMode = "static";
+    container.on("globalpointermove", (e) => {
+      const localPos = e.getLocalPosition(container);
+      const newHoveredPos = {
+        x: Math.floor(localPos.x / this.cellSize),
+        y: Math.floor(localPos.y / this.cellSize),
+      };
+      if (!this.isActiveCell(newHoveredPos)) {
+        return;
+      }
+      if (
+        newHoveredPos.x !== this.hoveredPosition?.x ||
+        newHoveredPos.y !== this.hoveredPosition.y
+      ) {
+        callback(newHoveredPos);
+      }
+      this.hoveredPosition = newHoveredPos;
+    });
   }
 }
