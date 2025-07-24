@@ -14,14 +14,17 @@ export type UnitState = {
 
 export class UnitModel {
   readonly data: UnitDatum;
+  readonly isOffense: boolean;
   state: UnitState;
   private component!: UnitComponent;
 
   private constructor({
     unitId,
+    isOffense,
     position,
   }: {
     unitId: UnitId;
+    isOffense: boolean;
     position: Position;
   }) {
     const data = findUnitDatum(unitId);
@@ -29,6 +32,7 @@ export class UnitModel {
       throw new Error("invalid unitId");
     }
     this.data = data;
+    this.isOffense = isOffense;
     this.state = {
       ...position,
       currentHp: data.hp,
@@ -47,7 +51,7 @@ export class UnitModel {
     isOffense: boolean;
     position: Position;
   }) {
-    const model = new UnitModel({ unitId, position });
+    const model = new UnitModel({ unitId, isOffense, position });
     model.component = await UnitComponent.create({
       unitId,
       cellSize,
@@ -60,13 +64,4 @@ export class UnitModel {
   addComponentToContainer(container: Container) {
     container.addChild(this.component.container);
   }
-
-  // onHover(callback: (unit: UnitDatum) => void) {
-  //   const { container } = this.component;
-  //   container.eventMode = "static";
-  //   container.on("pointerenter", () => {
-  //     callback(this.data);
-  //     console.log(this.data);
-  //   });
-  // }
 }

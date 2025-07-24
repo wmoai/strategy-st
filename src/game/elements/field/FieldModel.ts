@@ -1,7 +1,11 @@
 import type { Container } from "pixi.js";
 
 import { fieldData, type CellId, type FieldDatum } from "@/data/fieldData";
-import type { TerrainId } from "@/data/terrainData";
+import {
+  terrainDataMap,
+  type TerrainDatum,
+  type TerrainId,
+} from "@/data/terrainData";
 
 import { FieldComponent } from "./FieldComponent";
 
@@ -87,16 +91,24 @@ export class FieldModel {
     return Math.abs(from.y - to.y) + Math.abs(from.x - to.x);
   }
 
-  terrainId({ x, y }: Position) {
-    const { terrain } = this.data;
-    return terrain[y * this.data.width + x];
-  }
+  // terrainId({ x, y }: Position) {
+  //   const { terrain } = this.data;
+  //   return terrain[y * this.data.width + x];
+  // }
 
   addComponentToContainer(container: Container) {
     container.addChild(this.component.container);
   }
 
-  onHover(callback: (position: Position) => void) {
+  onHover(
+    callback: ({
+      position,
+      terrain,
+    }: {
+      position: Position;
+      terrain: TerrainDatum;
+    }) => void
+  ) {
     const { container } = this.component;
     container.eventMode = "static";
     container.on("globalpointermove", (e) => {
@@ -112,7 +124,10 @@ export class FieldModel {
         newHoveredPos.x !== this.hoveredPosition?.x ||
         newHoveredPos.y !== this.hoveredPosition.y
       ) {
-        callback(newHoveredPos);
+        callback({
+          position: newHoveredPos,
+          terrain: terrainDataMap[this.rows[newHoveredPos.y][newHoveredPos.x]],
+        });
       }
       this.hoveredPosition = newHoveredPos;
     });

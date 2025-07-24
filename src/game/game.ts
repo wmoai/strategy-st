@@ -1,5 +1,6 @@
 import { Application, Container } from "pixi.js";
 
+import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
 import { CursorModel } from "./elements/cursor/CursorModel";
@@ -13,6 +14,7 @@ export default async ({
   isPlayerOffense,
   sortieUnits,
   onHoverUnit,
+  onHoverTerrain,
 }: {
   canvas: HTMLCanvasElement;
   width: number;
@@ -22,7 +24,8 @@ export default async ({
     player: UnitDatum[];
     enemy: UnitDatum[];
   };
-  onHoverUnit: (unit: UnitDatum) => void;
+  onHoverUnit: (unitModel: UnitModel) => void;
+  onHoverTerrain: (terrain: TerrainDatum) => void;
 }) => {
   const app = new Application();
   await app.init({
@@ -78,20 +81,22 @@ export default async ({
   cursorModel.addComponentToContainer(container);
 
   container.x = app.screen.width / 2;
-  container.y = app.screen.height / 2;
+  // container.y = app.screen.height/ 2;
   container.pivot.x = container.width / 2;
-  container.pivot.y = container.height / 2;
+  // container.pivot.y = container.height / 2;
 
-  fieldModel.onHover((pos) => {
-    cursorModel.update(pos);
-    const hoveredUnit = playerUnitModels
+  fieldModel.onHover(({ position, terrain }) => {
+    cursorModel.update(position);
+    const hoveredUnitModel = playerUnitModels
       .concat(enemyUnitModels)
-      .find((unitModel) => {
-        return unitModel.state.x === pos.x && unitModel.state.y === pos.y;
-      });
-    if (hoveredUnit) {
-      onHoverUnit(hoveredUnit.data);
+      .find(
+        (unitModel) =>
+          unitModel.state.x === position.x && unitModel.state.y === position.y
+      );
+    if (hoveredUnitModel) {
+      onHoverUnit(hoveredUnitModel);
     }
+    onHoverTerrain(terrain);
   });
 
   // Listen for animate update

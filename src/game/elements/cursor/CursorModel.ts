@@ -46,7 +46,7 @@ export class CursorModel {
 
   update({ x, y }: Position) {
     this.graphic.x = x * this.cellSize + this.cellSize / 2;
-    this.graphic.y = y * this.cellSize + this.cellSize / 2 - 1;
+    this.graphic.y = y * this.cellSize + this.cellSize / 2 + 1;
   }
 
   addComponentToContainer(container: Container) {
@@ -55,17 +55,17 @@ export class CursorModel {
 
   animate(deltaTime: number) {
     this.time += deltaTime;
-    const totalLength = 64;
-    const unit = totalLength / 16;
-    if (this.time > totalLength) {
-      this.time -= totalLength;
+    const totalFrame = 60;
+    const note16 = totalFrame / 16;
+    if (this.time > totalFrame) {
+      this.time -= totalFrame;
     }
-    if (this.time < unit) {
-      this.graphic.scale = 1.05;
-    } else if (this.time < unit * 8) {
+    if (this.time < note16) {
       this.graphic.scale = 1.1;
-    } else if (this.time < unit * 9) {
-      this.graphic.scale = 1.05;
+    } else if (this.time < note16 * 8) {
+      this.graphic.scale = 1.2;
+    } else if (this.time < note16 * 9) {
+      this.graphic.scale = 1.1;
     } else {
       this.graphic.scale = 1;
     }
