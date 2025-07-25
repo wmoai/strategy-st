@@ -9,10 +9,9 @@ import {
 } from "pixi.js";
 
 import type { FieldDatum } from "@/data/fieldData";
-import type { TerrainId } from "@/data/terrainData";
+import { type TerrainId } from "@/data/terrainData";
 
-import type { Position } from "./FieldModel";
-import { fieldUtil } from "./fieldUtil";
+import { FieldLogic, type Position } from "./FieldLogic";
 
 const terrainTextureParts = [
   "topLeft",
@@ -46,39 +45,28 @@ export class FieldComponent {
   private readonly data: FieldDatum;
   readonly container: Container;
 
-  private constructor({ data }: { data: FieldDatum }) {
+  constructor({ data }: { data: FieldDatum }) {
     this.data = data;
-    this.container = new Container();
+    this.container = new Container({ eventMode: "static" });
   }
 
-  static async create({
-    data,
-    cellSize,
-  }: {
-    data: FieldDatum;
-    cellSize: number;
-  }) {
-    const component = new FieldComponent({ data });
-    await component.setSprites({ cellSize });
-    return component;
-  }
-
-  private async setSprites({ cellSize }: { cellSize: number }) {
+  async setSprites({ cellSize }: { cellSize: number }) {
     await FieldComponent.loadTerrainTextures();
     const { terrainTextures } = FieldComponent;
     if (terrainTextures === null) {
       return;
     }
-    const { width, terrain } = this.data;
+    const { width } = this.data;
 
-    const rows = Array.from({ length: width }).map((_, i) =>
-      terrain.slice(i * width, i * width + width)
-    );
+    const fieldLogic = new FieldLogic({ data: this.data });
 
-    rows.forEach((row, y) => {
+    fieldLogic.terrainRows.forEach((row, y) => {
       row.forEach((cellTerrain, x) => {
         const textureSet = terrainTextures[cellTerrain];
-        const neighborConnection = this.terrainNeighborConnection({ x, y });
+        const neighborConnection = fieldLogic.terrainNeighborConnection({
+          x,
+          y,
+        });
         terrainTextureParts.forEach((part) => {
           this.container.addChild(
             this.createSprite({
@@ -187,8 +175,6 @@ export class FieldComponent {
             const texture = new Texture({
               source: spriteImage,
               frame: new Rectangle(
-                // spriteTileSize * xIndex + (spriteTileSize / 2) * h + 0.5,
-                // spriteTileSize * yIndex + (spriteTileSize / 2) * v - 0.5,
                 spriteTileSize * xIndex + (spriteTileSize / 2) * h,
                 spriteTileSize * yIndex + (spriteTileSize / 2) * v,
                 spriteTileSize / 2,
@@ -214,59 +200,5 @@ export class FieldComponent {
       };
     }
     FieldComponent.terrainTextures = result;
-  }
-
-  private terrainNeighborConnection(pos: Position): TerrainNeighborConnection {
-    const buff: Record<number, Record<number, boolean>> = {
-      [-1]: {},
-      0: {},
-      1: {},
-    };
-    for (let dy = -1; dy < 2; dy++) {
-      for (let dx = -1; dx < 2; dx++) {
-        if (dy === 0 && dx === 0) {
-          continue;
-        }
-        const deltaPos = { x: pos.x + dx, y: pos.y + dy };
-        buff[dy][dx] =
-          !fieldUtil(this.data).existsCell(deltaPos) ||
-          this.isTerrainConnected(pos, deltaPos);
-      }
-    }
-    return {
-      topLeft: buff[-1][-1],
-      top: buff[-1][0],
-      topRight: buff[-1][1],
-      left: buff[0][-1],
-      right: buff[0][1],
-      bottomLeft: buff[1][-1],
-      bottom: buff[1][0],
-      bottomRight: buff[1][1],
-    };
-  }
-
-  private isTerrainConnected(from: Position, to: Position) {
-    const util = fieldUtil(this.data);
-    const fromTerrainId = util.terrainId(from);
-    const toTerrainId = util.terrainId(to);
-
-    const waterGroupIds = [6, 7] as TerrainId[];
-    const bridgeGroupIds = [9, 10] as TerrainId[];
-    if (waterGroupIds.includes(fromTerrainId)) {
-      if (
-        waterGroupIds.includes(toTerrainId) ||
-        bridgeGroupIds.includes(toTerrainId)
-      ) {
-        return true;
-      }
-    }
-    const mountainGroupIds = [4, 5] as TerrainId[];
-    if (
-      mountainGroupIds.includes(fromTerrainId) &&
-      mountainGroupIds.includes(toTerrainId)
-    ) {
-      return true;
-    }
-    return fromTerrainId === toTerrainId;
   }
 }

@@ -4,7 +4,7 @@ import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
 import { CursorModel } from "./elements/cursor/CursorModel";
-import { FieldModel } from "./elements/field/FieldModel";
+import { FieldController } from "./elements/field/FieldController";
 import { UnitModel } from "./elements/unit/UnitModel";
 
 export default async ({
@@ -36,16 +36,14 @@ export default async ({
   });
 
   const cellSize = 40;
-  const fieldModel = await FieldModel.createRandom({ cellSize });
+  const fieldController = await FieldController.random({ cellSize });
 
   const container = new Container();
   app.stage.addChild(container);
 
-  fieldModel.addComponentToContainer(container);
+  container.addChild(fieldController.container);
 
-  const playerInitPos = isPlayerOffense
-    ? fieldModel.offenseInitPositions
-    : fieldModel.defenseInitPositions;
+  const playerInitPos = fieldController.initialUnitPositions(isPlayerOffense);
   const playerUnitModels = await Promise.all(
     sortieUnits.player.map(async (unitData, index) => {
       const position = playerInitPos[index];
@@ -60,9 +58,7 @@ export default async ({
     })
   );
 
-  const enemyInitPos = isPlayerOffense
-    ? fieldModel.defenseInitPositions
-    : fieldModel.offenseInitPositions;
+  const enemyInitPos = fieldController.initialUnitPositions(!isPlayerOffense);
   const enemyUnitModels = await Promise.all(
     sortieUnits.enemy.map(async (unitData, index) => {
       const position = enemyInitPos[index];
@@ -85,7 +81,7 @@ export default async ({
   container.pivot.x = container.width / 2;
   // container.pivot.y = container.height / 2;
 
-  fieldModel.onHover(({ position, terrain }) => {
+  fieldController.onHover(({ position, terrain }) => {
     cursorModel.update(position);
     const hoveredUnitModel = playerUnitModels
       .concat(enemyUnitModels)

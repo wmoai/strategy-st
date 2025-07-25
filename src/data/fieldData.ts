@@ -3,7 +3,7 @@ import persianJson from "./json/field/persian.json";
 import sekiJson from "./json/field/seki.json";
 import type { TerrainId } from "./terrainData";
 
-type FieldId = number & { readonly __brand: unique symbol };
+export type FieldId = number & { readonly __brand: unique symbol };
 export type CellId = number & { readonly __brand: unique symbol };
 
 export type FieldDatum = {
