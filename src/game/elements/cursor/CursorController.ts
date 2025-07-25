@@ -1,10 +1,10 @@
-import { Container, Graphics } from "pixi.js";
+import { Graphics } from "pixi.js";
 
-import type { Position } from "../field/FieldModel";
+import type { Position } from "../field/FieldLogic";
 
-export class CursorModel {
+export class CursorController {
   private readonly cellSize: number;
-  private readonly graphic: Graphics;
+  readonly graphic: Graphics;
   private time: number = 0;
 
   constructor({ cellSize }: { cellSize: number }) {
@@ -47,10 +47,6 @@ export class CursorModel {
   update({ x, y }: Position) {
     this.graphic.x = x * this.cellSize + this.cellSize / 2;
     this.graphic.y = y * this.cellSize + this.cellSize / 2 + 1;
-  }
-
-  addComponentToContainer(container: Container) {
-    container.addChild(this.graphic);
   }
 
   animate(deltaTime: number) {

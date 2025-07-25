@@ -5,11 +5,12 @@ import { FieldComponent } from "./FieldComponent";
 import { FieldLogic, type Position } from "./FieldLogic";
 
 export class FieldController {
-  private readonly cellSize: number;
   private readonly component: FieldComponent;
   private readonly logic: FieldLogic;
 
-  private hoveredPosition?: Position;
+  private state: {
+    hoveredPosition: Position | null;
+  };
 
   private constructor({
     data,
@@ -18,15 +19,17 @@ export class FieldController {
     data: FieldDatum;
     cellSize: number;
   }) {
-    this.cellSize = cellSize;
-    this.component = new FieldComponent({ data });
+    this.component = new FieldComponent({ data, cellSize });
     this.logic = new FieldLogic({ data });
+    this.state = {
+      hoveredPosition: null,
+    };
   }
 
   static async random({ cellSize }: { cellSize: number }) {
     const fieldDatum = fieldData[Math.floor(Math.random() * fieldData.length)];
     const instance = new FieldController({ data: fieldDatum, cellSize });
-    await instance.component.setSprites({ cellSize });
+    await instance.component.setSprites();
     return instance;
   }
 
@@ -49,29 +52,20 @@ export class FieldController {
       terrain: TerrainDatum;
     }) => void
   ) {
-    const { container } = this.component;
-    container.on("globalpointermove", (e) => {
-      const localPos = e.getLocalPosition(container);
-      const newHoveredPos = {
-        x: Math.floor(localPos.x / this.cellSize),
-        y: Math.floor(localPos.y / this.cellSize),
-      };
-      if (!this.logic.isActiveCell(newHoveredPos)) {
+    this.component.onHover(({ position }) => {
+      if (!this.logic.isActiveCell(position)) {
         return;
       }
       if (
-        newHoveredPos.x !== this.hoveredPosition?.x ||
-        newHoveredPos.y !== this.hoveredPosition.y
+        position.x !== this.state.hoveredPosition?.x ||
+        position.y !== this.state.hoveredPosition.y
       ) {
         callback({
-          position: newHoveredPos,
-          terrain:
-            terrainDataMap[
-              this.logic.terrainId({ x: newHoveredPos.x, y: newHoveredPos.y })
-            ],
+          position,
+          terrain: terrainDataMap[this.logic.terrainId(position)],
         });
       }
-      this.hoveredPosition = newHoveredPos;
+      this.state.hoveredPosition = position;
     });
   }
 }

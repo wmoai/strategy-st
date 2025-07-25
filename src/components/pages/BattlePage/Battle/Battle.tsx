@@ -15,7 +15,7 @@ export const Battle: FC = () => {
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   const isRunning = useRef(false);
   const sortie = useAtomValue(sortieAtom);
-  const [hoveredUnitModel, setHoveredUnitModel] = useAtom(hoveredUnitAtom);
+  const [hoveredUnit, setHoveredUnit] = useAtom(hoveredUnitAtom);
   const [hoveredTerrain, setHoveredTerrain] = useAtom(hoveredTerrainAtom);
 
   useEffect(() => {
@@ -32,10 +32,10 @@ export const Battle: FC = () => {
       height: canvasWrapperRef.current.clientHeight,
       isPlayerOffense: sortie.isOffense,
       sortieUnits: sortie.units,
-      onHoverUnit: setHoveredUnitModel,
+      onHoverUnit: setHoveredUnit,
       onHoverTerrain: setHoveredTerrain,
     });
-  }, [setHoveredTerrain, setHoveredUnitModel, sortie.isOffense, sortie.units]);
+  }, [setHoveredTerrain, setHoveredUnit, sortie.isOffense, sortie.units]);
 
   return (
     <div className="flex flex-col h-screen bg-[#222] text-gray-100 overflow-hidden">
@@ -50,48 +50,48 @@ export const Battle: FC = () => {
             終了
           </button>
           <section className="flex-1">
-            {hoveredUnitModel && (
+            {hoveredUnit && (
               <div className="justify-self-center flex items-center gap-5 h-full">
                 <div className="p-2 bg-gray-500 rounded-xl">
                   <UnitImage
-                    unit={hoveredUnitModel.data}
-                    isBlue={!hoveredUnitModel.isOffense}
+                    unit={hoveredUnit.data}
+                    isBlue={!hoveredUnit.isOffense}
                   />
                 </div>
                 <div>
                   <header className="flex gap-2">
                     <div
                       className={unitNameTv({
-                        isOffense: hoveredUnitModel.isOffense,
+                        isOffense: hoveredUnit.isOffense,
                       })}
                     >
-                      {hoveredUnitModel.data.name}
+                      {hoveredUnit.data.name}
                     </div>
                     <div>
                       HP
                       <span className="ms-1 text-2xl text-green-300">
-                        {hoveredUnitModel.state.currentHp}
+                        {hoveredUnit.state.currentHp}
                       </span>
                       <span className="text-yellow-200">
-                        /{hoveredUnitModel.data.hp}
+                        /{hoveredUnit.data.hp}
                       </span>
                     </div>
                   </header>
                   <dl className="mt-0.5 grid grid-cols-[repeat(3,10fr_11fr)] items-center [&>dt]:me-1.5 [&>dd]:text-xl [&>dd]:text-yellow-200 [&>*]:leading-tight">
                     <dt>力</dt>
-                    <dd>{hoveredUnitModel.data.str}</dd>
+                    <dd>{hoveredUnit.data.str}</dd>
                     <dt>技</dt>
-                    <dd>{hoveredUnitModel.data.skl}</dd>
+                    <dd>{hoveredUnit.data.skl}</dd>
                     <dt>守備</dt>
-                    <dd>{hoveredUnitModel.data.dff}</dd>
+                    <dd>{hoveredUnit.data.dff}</dd>
                     <dt>移動</dt>
-                    <dd>{hoveredUnitModel.data.move}</dd>
+                    <dd>{hoveredUnit.data.move}</dd>
                     <dt>信仰</dt>
-                    <dd>{hoveredUnitModel.data.fth}</dd>
+                    <dd>{hoveredUnit.data.fth}</dd>
                     <dt>射程</dt>
                     <dd>
                       {(() => {
-                        const { max_range, min_range } = hoveredUnitModel.data;
+                        const { max_range, min_range } = hoveredUnit.data;
                         if (max_range === min_range) {
                           return max_range;
                         }

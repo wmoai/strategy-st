@@ -20,6 +20,11 @@ export class FieldLogic {
     this.data = data;
   }
 
+  static init(data: FieldDatum) {
+    const instance = new FieldLogic({ data });
+    return instance;
+  }
+
   existsCell({ x, y }: Position) {
     const { width, height } = this.data;
     return y >= 0 && y < height && x >= 0 && x < width;
@@ -91,7 +96,8 @@ export class FieldLogic {
         }
         const deltaPos = { x: pos.x + dx, y: pos.y + dy };
         buff[dy][dx] =
-          !this.existsCell(deltaPos) || this.isTerrainConnected(pos, deltaPos);
+          !this.existsCell(deltaPos) ||
+          this.isTerrainConnected({ from: pos, to: deltaPos });
       }
     }
     return {
@@ -106,7 +112,7 @@ export class FieldLogic {
     };
   }
 
-  isTerrainConnected(from: Position, to: Position) {
+  private isTerrainConnected({ from, to }: { from: Position; to: Position }) {
     const fromTerrainId = this.terrainId(from);
     const toTerrainId = this.terrainId(to);
 

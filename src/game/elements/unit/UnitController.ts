@@ -1,9 +1,7 @@
-import type { Container } from "pixi.js";
-
 import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
-import type { Position } from "../field/FieldModel";
+import type { Position } from "../field/FieldLogic";
 
 export type UnitState = {
   x: number;
@@ -12,18 +10,21 @@ export type UnitState = {
   currentHp: number;
 };
 
-export class UnitModel {
+export class UnitController {
   readonly data: UnitDatum;
   readonly isOffense: boolean;
+  private component: UnitComponent;
+
   state: UnitState;
-  private component!: UnitComponent;
 
   private constructor({
     unitId,
+    cellSize,
     isOffense,
     position,
   }: {
     unitId: UnitId;
+    cellSize: number;
     isOffense: boolean;
     position: Position;
   }) {
@@ -38,6 +39,7 @@ export class UnitModel {
       currentHp: data.hp,
       isActed: false,
     };
+    this.component = new UnitComponent({ data, isOffense, cellSize });
   }
 
   static async create({
@@ -51,17 +53,18 @@ export class UnitModel {
     isOffense: boolean;
     position: Position;
   }) {
-    const model = new UnitModel({ unitId, isOffense, position });
-    model.component = await UnitComponent.create({
+    await UnitComponent.loadUnitTextures();
+    const instance = new UnitController({
       unitId,
       cellSize,
       isOffense,
+      position,
     });
-    model.component.update(model.state);
-    return model;
+    instance.component.update(instance.state);
+    return instance;
   }
 
-  addComponentToContainer(container: Container) {
-    container.addChild(this.component.container);
+  get container() {
+    return this.component.container;
   }
 }

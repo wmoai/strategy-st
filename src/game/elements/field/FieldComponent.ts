@@ -28,51 +28,39 @@ type TerrainConnection =
   | "xy" // xy軸両方につながっている
   | "xyd"; // xy軸と斜め方向につながっている
 type ConnectedTerrainTexture = Record<TerrainConnection, TerrainTexture>;
-type TerrainNeighborConnection = {
-  topLeft: boolean;
-  top: boolean;
-  topRight: boolean;
-  left: boolean;
-  right: boolean;
-  bottomLeft: boolean;
-  bottom: boolean;
-  bottomRight: boolean;
-};
 
 export class FieldComponent {
   static terrainTextures: Record<TerrainId, ConnectedTerrainTexture> | null =
     null;
   private readonly data: FieldDatum;
+  private readonly cellSize: number;
   readonly container: Container;
+  private readonly logic: FieldLogic;
 
-  constructor({ data }: { data: FieldDatum }) {
+  constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
     this.data = data;
+    this.cellSize = cellSize;
     this.container = new Container({ eventMode: "static" });
+    this.logic = new FieldLogic({ data });
   }
 
-  async setSprites({ cellSize }: { cellSize: number }) {
+  async setSprites() {
     await FieldComponent.loadTerrainTextures();
     const { terrainTextures } = FieldComponent;
     if (terrainTextures === null) {
       return;
     }
     const { width } = this.data;
+    const { cellSize } = this;
 
-    const fieldLogic = new FieldLogic({ data: this.data });
-
-    fieldLogic.terrainRows.forEach((row, y) => {
+    this.logic.terrainRows.forEach((row, y) => {
       row.forEach((cellTerrain, x) => {
         const textureSet = terrainTextures[cellTerrain];
-        const neighborConnection = fieldLogic.terrainNeighborConnection({
-          x,
-          y,
-        });
         terrainTextureParts.forEach((part) => {
           this.container.addChild(
             this.createSprite({
               cellSize,
               textureSet,
-              neighborConnection,
               part,
               position: { x, y },
             })
@@ -112,16 +100,19 @@ export class FieldComponent {
   private createSprite({
     cellSize,
     textureSet,
-    neighborConnection,
     part,
     position: { x, y },
   }: {
     cellSize: number;
     textureSet: ConnectedTerrainTexture;
-    neighborConnection: TerrainNeighborConnection;
     part: TerrainTexturePart;
     position: Position;
   }) {
+    const neighborConnection = this.logic.terrainNeighborConnection({
+      x,
+      y,
+    });
+
     const isTopPart = part.includes("top");
     const isLeftPart = part.includes("Left");
     const connection = {
@@ -200,5 +191,17 @@ export class FieldComponent {
       };
     }
     FieldComponent.terrainTextures = result;
+  }
+
+  onHover(callback: ({ position }: { position: Position }) => void) {
+    const { container } = this;
+    container.on("globalpointermove", (e) => {
+      const localPos = e.getLocalPosition(container);
+      const newHoveredPos = {
+        x: Math.floor(localPos.x / this.cellSize),
+        y: Math.floor(localPos.y / this.cellSize),
+      };
+      callback({ position: newHoveredPos });
+    });
   }
 }

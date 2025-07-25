@@ -8,9 +8,9 @@ import {
 } from "pixi.js";
 
 import type { KlassId } from "@/data/klassData";
-import { findUnitDatum, type UnitId } from "@/data/unitData";
+import { type UnitDatum } from "@/data/unitData";
 
-import type { UnitState } from "./UnitModel";
+import type { UnitState } from "./UnitController";
 
 type UnitTexture = {
   gray: Texture;
@@ -19,7 +19,7 @@ type UnitTexture = {
 };
 
 type ConstructorParams = {
-  unitId: UnitId;
+  data: UnitDatum;
   isOffense: boolean;
   cellSize: number;
 };
@@ -38,11 +38,7 @@ export class UnitComponent {
   private readonly maxHp: number;
   private readonly hpBarWidth: number;
 
-  private constructor({ unitId, isOffense, cellSize }: ConstructorParams) {
-    const data = findUnitDatum(unitId);
-    if (!data) {
-      throw new Error("invalid unitId");
-    }
+  constructor({ data, isOffense, cellSize }: ConstructorParams) {
     this.klassId = data.klass;
     this.cellSize = cellSize;
     this.isOffense = isOffense;
@@ -73,13 +69,7 @@ export class UnitComponent {
     });
   }
 
-  static async create(args: ConstructorParams) {
-    await UnitComponent.loadUnitTextures();
-    const element = new UnitComponent(args);
-    return element;
-  }
-
-  private static async loadUnitTextures() {
+  static async loadUnitTextures() {
     if (UnitComponent.textures !== null) {
       return;
     }

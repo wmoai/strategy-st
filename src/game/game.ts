@@ -3,9 +3,9 @@ import { Application, Container } from "pixi.js";
 import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
-import { CursorModel } from "./elements/cursor/CursorModel";
+import { CursorController } from "./elements/cursor/CursorController";
 import { FieldController } from "./elements/field/FieldController";
-import { UnitModel } from "./elements/unit/UnitModel";
+import { UnitController } from "./elements/unit/UnitController";
 
 export default async ({
   canvas,
@@ -24,7 +24,7 @@ export default async ({
     player: UnitDatum[];
     enemy: UnitDatum[];
   };
-  onHoverUnit: (unitModel: UnitModel) => void;
+  onHoverUnit: (unitController: UnitController) => void;
   onHoverTerrain: (terrain: TerrainDatum) => void;
 }) => {
   const app = new Application();
@@ -44,53 +44,51 @@ export default async ({
   container.addChild(fieldController.container);
 
   const playerInitPos = fieldController.initialUnitPositions(isPlayerOffense);
-  const playerUnitModels = await Promise.all(
+  const playerUnits = await Promise.all(
     sortieUnits.player.map(async (unitData, index) => {
       const position = playerInitPos[index];
-      const unitModel = await UnitModel.create({
+      const unitController = await UnitController.create({
         unitId: unitData.id,
         cellSize,
         isOffense: isPlayerOffense,
         position,
       });
-      unitModel.addComponentToContainer(container);
-      return unitModel;
+      container.addChild(unitController.container);
+      return unitController;
     })
   );
 
   const enemyInitPos = fieldController.initialUnitPositions(!isPlayerOffense);
-  const enemyUnitModels = await Promise.all(
+  const enemyUnits = await Promise.all(
     sortieUnits.enemy.map(async (unitData, index) => {
       const position = enemyInitPos[index];
-      const unitModel = await UnitModel.create({
+      const unitController = await UnitController.create({
         unitId: unitData.id,
         cellSize,
         isOffense: !isPlayerOffense,
         position,
       });
-      unitModel.addComponentToContainer(container);
-      return unitModel;
+      container.addChild(unitController.container);
+      return unitController;
     })
   );
 
-  const cursorModel = new CursorModel({ cellSize });
-  cursorModel.addComponentToContainer(container);
+  const cursorController = new CursorController({ cellSize });
+  container.addChild(cursorController.graphic);
 
   container.x = app.screen.width / 2;
-  // container.y = app.screen.height/ 2;
   container.pivot.x = container.width / 2;
-  // container.pivot.y = container.height / 2;
 
   fieldController.onHover(({ position, terrain }) => {
-    cursorModel.update(position);
-    const hoveredUnitModel = playerUnitModels
-      .concat(enemyUnitModels)
+    cursorController.update(position);
+    const hoveredUnit = playerUnits
+      .concat(enemyUnits)
       .find(
         (unitModel) =>
           unitModel.state.x === position.x && unitModel.state.y === position.y
       );
-    if (hoveredUnitModel) {
-      onHoverUnit(hoveredUnitModel);
+    if (hoveredUnit) {
+      onHoverUnit(hoveredUnit);
     }
     onHoverTerrain(terrain);
   });
@@ -100,6 +98,6 @@ export default async ({
     // Continuously rotate the container!
     // * use delta to create frame-independent transform *
     // container.rotation -= 0.01 * time.deltaTime;
-    cursorModel.animate(time.deltaTime);
+    cursorController.animate(time.deltaTime);
   });
 };
