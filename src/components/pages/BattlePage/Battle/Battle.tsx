@@ -51,8 +51,8 @@ export const Battle: FC = () => {
           </button>
           <section className="flex-1">
             {hoveredUnitModel && (
-              <div className="justify-self-center flex items-center gap-4 h-full">
-                <div className="p-2 bg-gray-500 rounded-md">
+              <div className="justify-self-center flex items-center gap-5 h-full">
+                <div className="p-2 bg-gray-500 rounded-xl">
                   <UnitImage
                     unit={hoveredUnitModel.data}
                     isBlue={!hoveredUnitModel.isOffense}
@@ -77,7 +77,7 @@ export const Battle: FC = () => {
                       </span>
                     </div>
                   </header>
-                  <dl className="mt-0.5 grid grid-cols-[repeat(3,10fr_11fr)] items-center [&>dt]:me-1.5 [&>dd]:text-xl [&>dd]:text-yellow-200">
+                  <dl className="mt-0.5 grid grid-cols-[repeat(3,10fr_11fr)] items-center [&>dt]:me-1.5 [&>dd]:text-xl [&>dd]:text-yellow-200 [&>*]:leading-tight">
                     <dt>力</dt>
                     <dd>{hoveredUnitModel.data.str}</dd>
                     <dt>技</dt>

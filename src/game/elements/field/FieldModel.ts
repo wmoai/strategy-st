@@ -1,11 +1,7 @@
 import type { Container } from "pixi.js";
 
 import { fieldData, type CellId, type FieldDatum } from "@/data/fieldData";
-import {
-  terrainDataMap,
-  type TerrainDatum,
-  type TerrainId,
-} from "@/data/terrainData";
+import { terrainDataMap, type TerrainDatum } from "@/data/terrainData";
 
 import { FieldComponent } from "./FieldComponent";
 
@@ -15,7 +11,6 @@ export class FieldModel {
   private readonly data: FieldDatum;
   private readonly cellSize: number;
   readonly turn: number;
-  readonly rows: TerrainId[][];
   readonly offenseInitPositions: Position[];
   readonly defenseInitPositions: Position[];
   readonly defenseBasePositions: Position[];
@@ -32,10 +27,6 @@ export class FieldModel {
     this.data = data;
     this.cellSize = cellSize;
     this.turn = data.info.turn[0];
-    const { width, terrain } = data;
-    this.rows = Array.from({ length: width }).map((_, i) =>
-      terrain.slice(i * width, i * width + width)
-    );
     this.offenseInitPositions = data.info.oinit.map((cellId) =>
       this.position(cellId)
     );
@@ -91,10 +82,10 @@ export class FieldModel {
     return Math.abs(from.y - to.y) + Math.abs(from.x - to.x);
   }
 
-  // terrainId({ x, y }: Position) {
-  //   const { terrain } = this.data;
-  //   return terrain[y * this.data.width + x];
-  // }
+  terrainId({ x, y }: Position) {
+    const { terrain, width } = this.data;
+    return terrain[y * width + x];
+  }
 
   addComponentToContainer(container: Container) {
     container.addChild(this.component.container);
@@ -126,7 +117,10 @@ export class FieldModel {
       ) {
         callback({
           position: newHoveredPos,
-          terrain: terrainDataMap[this.rows[newHoveredPos.y][newHoveredPos.x]],
+          terrain:
+            terrainDataMap[
+              this.terrainId({ x: newHoveredPos.x, y: newHoveredPos.y })
+            ],
         });
       }
       this.hoveredPosition = newHoveredPos;

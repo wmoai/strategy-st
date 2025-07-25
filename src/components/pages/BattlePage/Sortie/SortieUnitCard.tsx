@@ -26,7 +26,7 @@ export const SortieUnitCard: FC<Props> = ({ unit, isOffense, isSelected }) => {
 const sortieUnitCardTv = tv({
   slots: {
     base: "relative py-1 bg-gray-200",
-    cost: "absolute top-0 right-0 size-6 leading-6 outline-1 outline-white rounded-full text-center bg-gray-900 text-white",
+    cost: "absolute top-0 right-0 size-6 outline-1 outline-white rounded-full text-center bg-gray-900 text-white",
   },
   variants: {
     isSelected: {
