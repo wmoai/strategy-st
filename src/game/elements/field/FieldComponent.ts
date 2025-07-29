@@ -12,6 +12,7 @@ import type { FieldDatum } from "@/data/fieldData";
 import { type TerrainId } from "@/data/terrainData";
 
 import { FieldLogic, type Position } from "./FieldLogic";
+import type { RangeCell } from "../range/RangeLogic";
 
 const terrainTextureParts = [
   "topLeft",
@@ -35,12 +36,21 @@ export class FieldComponent {
   private readonly data: FieldDatum;
   private readonly cellSize: number;
   readonly container: Container;
+  readonly layer: {
+    terrain: Container;
+    range: Container | null;
+  };
   private readonly logic: FieldLogic;
 
   constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
     this.data = data;
     this.cellSize = cellSize;
     this.container = new Container({ eventMode: "static" });
+    this.layer = {
+      terrain: new Container(),
+      range: null,
+    };
+    this.container.addChild(this.layer.terrain);
     this.logic = new FieldLogic({ data });
   }
 
@@ -55,9 +65,9 @@ export class FieldComponent {
 
     this.logic.terrainRows.forEach((row, y) => {
       row.forEach((cellTerrain, x) => {
-        const textureSet = terrainTextures[cellTerrain];
+        const textureSet = terrainTextures[cellTerrain.id];
         terrainTextureParts.forEach((part) => {
-          this.container.addChild(
+          this.layer.terrain.addChild(
             this.createSprite({
               cellSize,
               textureSet,
@@ -86,15 +96,15 @@ export class FieldComponent {
       )
       .cut();
     edgeShadow.filters = [new BlurFilter()];
-    this.container.addChild(edgeShadow);
+    this.layer.terrain.addChild(edgeShadow);
 
     const containerMask = new Graphics()
       .rect(0, 0, width * cellSize, this.data.height * cellSize)
       .fill(0);
-    this.container.mask = containerMask;
-    this.container.addChild(containerMask);
+    this.layer.terrain.mask = containerMask;
+    this.layer.terrain.addChild(containerMask);
 
-    this.container.cacheAsTexture(true);
+    this.layer.terrain.cacheAsTexture(true);
   }
 
   private createSprite({
@@ -193,15 +203,54 @@ export class FieldComponent {
     FieldComponent.terrainTextures = result;
   }
 
+  renderRange({
+    ranges,
+    isHealer,
+  }: {
+    ranges: RangeCell[][];
+    isHealer: boolean;
+  }) {
+    this.layer.range?.destroy();
+
+    const rangeContainer = new Container();
+    ranges.forEach((row, y) =>
+      row.forEach((rangeCell, x) => {
+        if (rangeCell.movable || rangeCell.actable) {
+          const color = rangeCell.movable
+            ? 0x98fb98
+            : isHealer
+            ? 0x87ceeb
+            : 0xffd700;
+          const highlight = new Graphics()
+            .rect(
+              x * this.cellSize,
+              y * this.cellSize,
+              this.cellSize,
+              this.cellSize
+            )
+            .fill({ color, alpha: 0.5 })
+            .stroke({ color });
+          rangeContainer.addChild(highlight);
+        }
+      })
+    );
+    this.layer.range = rangeContainer;
+    this.container.addChild(rangeContainer);
+    rangeContainer.cacheAsTexture(true);
+  }
+
   onHover(callback: ({ position }: { position: Position }) => void) {
-    const { container } = this;
-    container.on("globalpointermove", (e) => {
-      const localPos = e.getLocalPosition(container);
-      const newHoveredPos = {
+    this.container.on("globalpointermove", (e) => {
+      const localPos = e.getLocalPosition(this.container);
+      const actualPos = {
         x: Math.floor(localPos.x / this.cellSize),
         y: Math.floor(localPos.y / this.cellSize),
       };
-      callback({ position: newHoveredPos });
+      callback({ position: actualPos });
     });
+  }
+
+  onClick(callback: () => void) {
+    this.container.on("click", callback);
   }
 }

@@ -1,5 +1,5 @@
 import { type CellId, type FieldDatum } from "@/data/fieldData";
-import type { TerrainId } from "@/data/terrainData";
+import { terrainDataMap, type TerrainId } from "@/data/terrainData";
 
 export type Position = { x: number; y: number };
 type TerrainNeighborConnection = {
@@ -60,10 +60,21 @@ export class FieldLogic {
     };
   }
 
+  terrain(pos: Position) {
+    return terrainDataMap[this.terrainId(pos)];
+  }
+
+  // get terrainRows() {
+  //   const { terrain, width } = this.data;
+  //   return Array.from({ length: width }).map((_, i) =>
+  //     terrain.slice(i * width, i * width + width)
+  //   );
+  // }
+
   get terrainRows() {
-    const { terrain, width } = this.data;
-    return Array.from({ length: width }).map((_, i) =>
-      terrain.slice(i * width, i * width + width)
+    const { width, height } = this.data;
+    return Array.from({ length: height }).map((_, y) =>
+      Array.from({ length: width }).map((_, x) => this.terrain({ x, y }))
     );
   }
 

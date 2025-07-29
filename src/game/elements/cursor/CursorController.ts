@@ -5,7 +5,6 @@ import type { Position } from "../field/FieldLogic";
 export class CursorController {
   private readonly cellSize: number;
   readonly graphic: Graphics;
-  private time: number = 0;
 
   constructor({ cellSize }: { cellSize: number }) {
     this.cellSize = cellSize;
@@ -28,7 +27,7 @@ export class CursorController {
       .lineTo(length, cellSize)
       .moveTo(cellSize - length, cellSize)
       .lineTo(cellSize, cellSize)
-      .stroke({ width: 2, color: 0x333333 })
+      .stroke({ width: 2, color: 0x222222 })
       .rect(left, top, length, thickness)
       .rect(left, top, thickness, length)
       .rect(cellSize - length, top, length, thickness)
@@ -49,18 +48,14 @@ export class CursorController {
     this.graphic.y = y * this.cellSize + this.cellSize / 2 + 1;
   }
 
-  animate(deltaTime: number) {
-    this.time += deltaTime;
+  animate(frame: number) {
     const totalFrame = 60;
     const note16 = totalFrame / 16;
-    if (this.time > totalFrame) {
-      this.time -= totalFrame;
-    }
-    if (this.time < note16) {
+    if (frame < note16) {
       this.graphic.scale = 1.1;
-    } else if (this.time < note16 * 8) {
+    } else if (frame < note16 * 8) {
       this.graphic.scale = 1.2;
-    } else if (this.time < note16 * 9) {
+    } else if (frame < note16 * 9) {
       this.graphic.scale = 1.1;
     } else {
       this.graphic.scale = 1;

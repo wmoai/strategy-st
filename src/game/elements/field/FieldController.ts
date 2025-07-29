@@ -5,7 +5,8 @@ import { FieldComponent } from "./FieldComponent";
 import { FieldLogic, type Position } from "./FieldLogic";
 
 export class FieldController {
-  private readonly component: FieldComponent;
+  readonly data: FieldDatum;
+  readonly component: FieldComponent;
   private readonly logic: FieldLogic;
 
   private state: {
@@ -19,6 +20,7 @@ export class FieldController {
     data: FieldDatum;
     cellSize: number;
   }) {
+    this.data = data;
     this.component = new FieldComponent({ data, cellSize });
     this.logic = new FieldLogic({ data });
     this.state = {
@@ -67,5 +69,22 @@ export class FieldController {
       }
       this.state.hoveredPosition = position;
     });
+  }
+
+  animate(frame: number) {
+    if (!this.component.layer.range) {
+      return;
+    }
+    const totalFrame = 60;
+    const note16 = totalFrame / 16;
+    if (frame < note16) {
+      this.component.layer.range.alpha = 0.95;
+    } else if (frame < note16 * 8) {
+      this.component.layer.range.alpha = 1;
+    } else if (frame < note16 * 9) {
+      this.component.layer.range.alpha = 0.95;
+    } else {
+      this.component.layer.range.alpha = 0.9;
+    }
   }
 }

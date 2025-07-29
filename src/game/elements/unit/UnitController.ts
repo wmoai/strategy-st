@@ -1,3 +1,4 @@
+import { findKlass } from "@/data/klassData";
 import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
@@ -66,5 +67,10 @@ export class UnitController {
 
   get container() {
     return this.component.container;
+  }
+
+  get isHealer() {
+    const klass = findKlass(this.data.klass);
+    return klass?.healer === 1;
   }
 }

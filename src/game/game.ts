@@ -5,6 +5,7 @@ import type { UnitDatum } from "@/data/unitData";
 
 import { CursorController } from "./elements/cursor/CursorController";
 import { FieldController } from "./elements/field/FieldController";
+import { calculateRange } from "./elements/range/RangeLogic";
 import { UnitController } from "./elements/unit/UnitController";
 
 export default async ({
@@ -43,10 +44,11 @@ export default async ({
 
   container.addChild(fieldController.container);
 
-  const playerInitPos = fieldController.initialUnitPositions(isPlayerOffense);
+  const playerInitPositions =
+    fieldController.initialUnitPositions(isPlayerOffense);
   const playerUnits = await Promise.all(
     sortieUnits.player.map(async (unitData, index) => {
-      const position = playerInitPos[index];
+      const position = playerInitPositions[index];
       const unitController = await UnitController.create({
         unitId: unitData.id,
         cellSize,
@@ -58,10 +60,12 @@ export default async ({
     })
   );
 
-  const enemyInitPos = fieldController.initialUnitPositions(!isPlayerOffense);
+  const enemyInitPositions = fieldController.initialUnitPositions(
+    !isPlayerOffense
+  );
   const enemyUnits = await Promise.all(
     sortieUnits.enemy.map(async (unitData, index) => {
-      const position = enemyInitPos[index];
+      const position = enemyInitPositions[index];
       const unitController = await UnitController.create({
         unitId: unitData.id,
         cellSize,
@@ -79,9 +83,10 @@ export default async ({
   container.x = app.screen.width / 2;
   container.pivot.x = container.width / 2;
 
+  let hoveredUnit: UnitController | undefined = undefined;
   fieldController.onHover(({ position, terrain }) => {
     cursorController.update(position);
-    const hoveredUnit = playerUnits
+    hoveredUnit = playerUnits
       .concat(enemyUnits)
       .find(
         (unitModel) =>
@@ -92,12 +97,32 @@ export default async ({
     }
     onHoverTerrain(terrain);
   });
+  fieldController.component.onClick(() => {
+    if (hoveredUnit) {
+      const opponentUnits =
+        isPlayerOffense === hoveredUnit.isOffense ? enemyUnits : playerUnits;
+      const ranges = calculateRange({
+        field: fieldController.data,
+        noEntries: opponentUnits.map((unit) => ({
+          x: unit.state.x,
+          y: unit.state.y,
+        })),
+        unit: hoveredUnit,
+      });
+      fieldController.component.renderRange({
+        ranges,
+        isHealer: hoveredUnit.isHealer,
+      });
+    }
+  });
 
-  // Listen for animate update
+  let frame = 0;
   app.ticker.add((time) => {
-    // Continuously rotate the container!
-    // * use delta to create frame-independent transform *
-    // container.rotation -= 0.01 * time.deltaTime;
-    cursorController.animate(time.deltaTime);
+    frame += time.deltaTime;
+    if (frame > 60) {
+      frame -= 60;
+    }
+    cursorController.animate(frame);
+    fieldController.animate(frame);
   });
 };
