@@ -18,8 +18,8 @@ type State =
     }
   | {
       type: "move";
-      hoveredUnit?: UnitController;
       unit: UnitController;
+      hoveredUnit?: UnitController;
     }
   | {
       type: "act";
@@ -32,6 +32,7 @@ const cellSize = 40;
 export class Game {
   app = new Application();
   state: State = { type: "map" };
+  isPlayerOffense = true;
   controllers: {
     field?: FieldController;
     range?: RangeController;
@@ -46,6 +47,15 @@ export class Game {
     cursor: new Container(),
   };
 
+  constructor() {
+    const container = new Container();
+    container.addChild(this.layer.field);
+    container.addChild(this.layer.range);
+    container.addChild(this.layer.unit);
+    container.addChild(this.layer.cursor);
+    this.app.stage.addChild(container);
+  }
+
   async run({
     canvas,
     width,
@@ -53,7 +63,7 @@ export class Game {
     isPlayerOffense,
     sortieUnits,
     onFocusUnit,
-    onHoverTerrain,
+    onFocusTerrain,
   }: {
     canvas: HTMLCanvasElement;
     width: number;
@@ -64,7 +74,7 @@ export class Game {
       enemy: UnitDatum[];
     };
     onFocusUnit: (unitController: UnitController) => void;
-    onHoverTerrain: (terrain: TerrainDatum) => void;
+    onFocusTerrain: (terrain: TerrainDatum) => void;
   }) {
     await FieldComponent.preload();
     await UnitComponent.preload();
@@ -74,13 +84,7 @@ export class Game {
       height,
       backgroundColor: "#222",
     });
-
-    const container = new Container();
-    container.addChild(this.layer.field);
-    container.addChild(this.layer.range);
-    container.addChild(this.layer.unit);
-    container.addChild(this.layer.cursor);
-    this.app.stage.addChild(container);
+    this.isPlayerOffense = isPlayerOffense;
 
     const fieldController = FieldController.random({ cellSize });
     this.controllers.field = fieldController;
@@ -119,12 +123,24 @@ export class Game {
     this.controllers.cursor = new CursorController({ cellSize });
     this.layer.cursor.addChild(this.controllers.cursor.graphic);
 
-    container.x = this.app.screen.width / 2;
-    container.pivot.x = container.width / 2;
+    this.app.stage.x = this.app.screen.width / 2;
+    this.app.stage.pivot.x = this.app.stage.width / 2;
 
-    fieldController.onHover(({ position, terrain }) => {
+    this.setHoverHandler({ onFocusUnit, onFocusTerrain });
+    this.setClickHandler();
+    this.setTicker();
+  }
+
+  private setHoverHandler({
+    onFocusUnit,
+    onFocusTerrain,
+  }: {
+    onFocusUnit: (unitController: UnitController) => void;
+    onFocusTerrain: (terrain: TerrainDatum) => void;
+  }) {
+    this.controllers.field?.onHover(({ position, terrain }) => {
       this.controllers.cursor?.update(position);
-      onHoverTerrain(terrain);
+      onFocusTerrain(terrain);
       switch (this.state.type) {
         case "map": {
           const hoveredUnit = this.findUnitFromPosition(position);
@@ -147,7 +163,14 @@ export class Game {
         }
       }
     });
-    fieldController.component.onClick(() => {
+  }
+
+  private setClickHandler() {
+    this.controllers.field?.component.onClick(() => {
+      const { field: fieldController } = this.controllers;
+      if (!fieldController) {
+        return;
+      }
       switch (this.state.type) {
         case "map": {
           if (!this.state.hoveredUnit) {
@@ -157,7 +180,7 @@ export class Game {
             field: fieldController.data,
             unit: this.state.hoveredUnit,
             opponentUnits:
-              (isPlayerOffense === this.state.hoveredUnit.isOffense
+              (this.isPlayerOffense === this.state.hoveredUnit.isOffense
                 ? this.controllers.enemyUnits
                 : this.controllers.playerUnits) ?? [],
           });
@@ -169,7 +192,9 @@ export class Game {
         }
       }
     });
+  }
 
+  private setTicker() {
     let frame = 0;
     this.app.ticker.add((time) => {
       frame += time.deltaTime;
@@ -181,7 +206,7 @@ export class Game {
     });
   }
 
-  findUnitFromPosition({ x, y }: Position) {
+  private findUnitFromPosition({ x, y }: Position) {
     return this.controllers.playerUnits
       ?.concat(this.controllers.enemyUnits ?? [])
       .find((unitModel) => unitModel.state.x === x && unitModel.state.y === y);

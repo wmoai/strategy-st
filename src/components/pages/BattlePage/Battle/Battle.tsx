@@ -26,14 +26,15 @@ export const Battle: FC = () => {
       return;
     }
     isRunning.current = true;
-    new Game().run({
+    const game = new Game();
+    game.run({
       canvas: canvasRef.current,
       width: canvasWrapperRef.current.clientWidth,
       height: canvasWrapperRef.current.clientHeight,
       isPlayerOffense: sortie.isOffense,
       sortieUnits: sortie.units,
       onFocusUnit: setFocusedUnit,
-      onHoverTerrain: setFocusedTerrain,
+      onFocusTerrain: setFocusedTerrain,
     });
   }, [setFocusedTerrain, setFocusedUnit, sortie.isOffense, sortie.units]);
 
