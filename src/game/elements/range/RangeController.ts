@@ -1,11 +1,12 @@
 import type { FieldDatum } from "@/data/fieldData";
 
 import { RangeComponent } from "./RangeComponent";
-import { calculateRange } from "./RangeLogic";
+import { calculateRange, type RangeCell } from "./RangeLogic";
 import type { UnitController } from "../unit/UnitController";
 
 export class RangeController {
   component: RangeComponent;
+  private ranges: RangeCell[][] | null = null;
 
   constructor({ cellSize }: { cellSize: number }) {
     this.component = new RangeComponent({ cellSize });
@@ -24,7 +25,7 @@ export class RangeController {
     unit: UnitController;
     opponentUnits: UnitController[];
   }) {
-    const ranges = calculateRange({
+    this.ranges = calculateRange({
       field,
       noEntries: opponentUnits.map((unit) => ({
         x: unit.state.x,
@@ -33,9 +34,14 @@ export class RangeController {
       unit,
     });
     this.component.set({
-      ranges,
+      ranges: this.ranges,
       isHealer: unit.isHealer,
     });
+  }
+
+  removeRange() {
+    this.ranges = null;
+    this.component.reset();
   }
 
   animate(frame: number) {

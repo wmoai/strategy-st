@@ -26,6 +26,7 @@ type State =
 const cellSize = 40;
 
 export class Game {
+  app = new Application();
   state: State = { type: "map" };
   layer = {
     field: new Container(),
@@ -54,8 +55,7 @@ export class Game {
     onHoverUnit: (unitController: UnitController) => void;
     onHoverTerrain: (terrain: TerrainDatum) => void;
   }) {
-    const app = new Application();
-    await app.init({
+    await this.app.init({
       canvas,
       width,
       height,
@@ -67,7 +67,7 @@ export class Game {
     container.addChild(this.layer.range);
     container.addChild(this.layer.unit);
     container.addChild(this.layer.cursor);
-    app.stage.addChild(container);
+    this.app.stage.addChild(container);
 
     const fieldController = await FieldController.random({ cellSize });
     this.layer.field.addChild(fieldController.container);
@@ -111,38 +111,45 @@ export class Game {
     const cursorController = new CursorController({ cellSize });
     this.layer.cursor.addChild(cursorController.graphic);
 
-    container.x = app.screen.width / 2;
+    container.x = this.app.screen.width / 2;
     container.pivot.x = container.width / 2;
 
-    let hoveredUnit: UnitController | undefined = undefined;
+    // let hoveredUnit: UnitController | undefined = undefined;
     fieldController.onHover(({ position, terrain }) => {
       cursorController.update(position);
-      hoveredUnit = playerUnits
-        .concat(enemyUnits)
-        .find(
-          (unitModel) =>
-            unitModel.state.x === position.x && unitModel.state.y === position.y
-        );
-      if (hoveredUnit) {
-        onHoverUnit(hoveredUnit);
+      if (this.state.type === "map") {
+        this.state.hoveredUnit = playerUnits
+          .concat(enemyUnits)
+          .find(
+            (unitModel) =>
+              unitModel.state.x === position.x &&
+              unitModel.state.y === position.y
+          );
+        if (this.state.hoveredUnit) {
+          onHoverUnit(this.state.hoveredUnit);
+        }
       }
       onHoverTerrain(terrain);
     });
     fieldController.component.onClick(() => {
-      if (hoveredUnit) {
+      if (this.state.type === "map" && this.state.hoveredUnit) {
         rangeController.createRange({
           field: fieldController.data,
-          unit: hoveredUnit,
+          unit: this.state.hoveredUnit,
           opponentUnits:
-            isPlayerOffense === hoveredUnit.isOffense
+            isPlayerOffense === this.state.hoveredUnit.isOffense
               ? enemyUnits
               : playerUnits,
         });
+        this.state = {
+          type: "move",
+          unit: this.state.hoveredUnit,
+        };
       }
     });
 
     let frame = 0;
-    app.ticker.add((time) => {
+    this.app.ticker.add((time) => {
       frame += time.deltaTime;
       if (frame > 60) {
         frame -= 60;

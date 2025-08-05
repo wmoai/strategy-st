@@ -12,7 +12,7 @@ export class RangeComponent {
   }
 
   set({ ranges, isHealer }: { ranges: RangeCell[][]; isHealer: boolean }) {
-    this.remove();
+    this.reset();
     ranges.forEach((row, y) =>
       row.forEach((rangeCell, x) => {
         if (rangeCell.movable || rangeCell.actable) {
@@ -28,7 +28,7 @@ export class RangeComponent {
               this.cellSize,
               this.cellSize
             )
-            .fill({ color, alpha: 0.5 })
+            .fill({ color, alpha: 0.65 })
             .stroke({ color });
           this.innerContainer.addChild(highlight);
         }
@@ -38,7 +38,7 @@ export class RangeComponent {
     this.container.addChild(this.innerContainer);
   }
 
-  remove() {
+  reset() {
     this.innerContainer.destroy();
     this.innerContainer = new Container();
   }
