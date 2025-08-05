@@ -8,7 +8,7 @@ import {
   hoveredUnitAtom,
   sortieAtom,
 } from "@/features/battle/battleAtom";
-import { runGame } from "@/game";
+import { Game } from "@/game/elements/game/Game";
 
 export const Battle: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,7 +26,7 @@ export const Battle: FC = () => {
       return;
     }
     isRunning.current = true;
-    runGame({
+    new Game().run({
       canvas: canvasRef.current,
       width: canvasWrapperRef.current.clientWidth,
       height: canvasWrapperRef.current.clientHeight,

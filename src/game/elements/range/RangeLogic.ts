@@ -49,7 +49,8 @@ export const calculateRange = ({
     }))
   );
 
-  const loop = () => {
+  // ダイクストラ法
+  const dijkstraAlgoLoop = () => {
     const minimumStepCell = calculatingMap.reduce((result, row) => {
       row.forEach((cell) => {
         if (cell.isConfirmed) {
@@ -89,14 +90,14 @@ export const calculateRange = ({
     }
 
     [
-      { y: -1, x: 0 },
-      { y: 0, x: 1 },
-      { y: 1, x: 0 },
-      { y: 0, x: -1 },
-    ].forEach((deltaPos) => {
+      { dy: -1, dx: 0 },
+      { dy: 0, dx: 1 },
+      { dy: 1, dx: 0 },
+      { dy: 0, dx: -1 },
+    ].forEach(({ dx, dy }) => {
       const forwardPos = {
-        x: x + deltaPos.x,
-        y: y + deltaPos.y,
+        x: x + dx,
+        y: y + dy,
       };
       const cell = calculatingMap[forwardPos.y][forwardPos.x];
       if (
@@ -118,9 +119,9 @@ export const calculateRange = ({
         };
       }
     });
-    loop();
+    dijkstraAlgoLoop();
   };
-  loop();
+  dijkstraAlgoLoop();
   return result;
 };
 

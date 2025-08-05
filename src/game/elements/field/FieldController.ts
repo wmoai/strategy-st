@@ -70,21 +70,4 @@ export class FieldController {
       this.state.hoveredPosition = position;
     });
   }
-
-  animate(frame: number) {
-    if (!this.component.layer.range) {
-      return;
-    }
-    const totalFrame = 60;
-    const note16 = totalFrame / 16;
-    if (frame < note16) {
-      this.component.layer.range.alpha = 0.95;
-    } else if (frame < note16 * 8) {
-      this.component.layer.range.alpha = 1;
-    } else if (frame < note16 * 9) {
-      this.component.layer.range.alpha = 0.95;
-    } else {
-      this.component.layer.range.alpha = 0.9;
-    }
-  }
 }
