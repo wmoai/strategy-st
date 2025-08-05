@@ -13,26 +13,19 @@ export class FieldController {
     hoveredPosition: Position | null;
   };
 
-  private constructor({
-    data,
-    cellSize,
-  }: {
-    data: FieldDatum;
-    cellSize: number;
-  }) {
+  constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
     this.data = data;
     this.component = new FieldComponent({ data, cellSize });
     this.logic = new FieldLogic({ data });
     this.state = {
       hoveredPosition: null,
     };
+    this.component.setSprites();
   }
 
-  static async random({ cellSize }: { cellSize: number }) {
+  static random({ cellSize }: { cellSize: number }) {
     const fieldDatum = fieldData[Math.floor(Math.random() * fieldData.length)];
-    const instance = new FieldController({ data: fieldDatum, cellSize });
-    await instance.component.setSprites();
-    return instance;
+    return new FieldController({ data: fieldDatum, cellSize });
   }
 
   get container() {

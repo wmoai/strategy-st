@@ -20,5 +20,5 @@ export const sortieAtom = atom<{
   },
 });
 
-export const hoveredUnitAtom = atom<UnitController | undefined>();
-export const hoveredTerrainAtom = atom<TerrainDatum | undefined>();
+export const focusedUnitAtom = atom<UnitController | undefined>();
+export const focusedTerrainAtom = atom<TerrainDatum | undefined>();

@@ -37,14 +37,59 @@ export class FieldComponent {
   readonly container = new Container({ eventMode: "static" });
   private readonly logic: FieldLogic;
 
+  static async preload() {
+    const spriteImage = await Assets.load("/strategy/terrain.png");
+    const spriteTileSize = 40;
+
+    const result: Record<TerrainId, ConnectedTerrainTexture> = {};
+    for (
+      let xIndex = 0;
+      xIndex < spriteImage.width / spriteTileSize;
+      xIndex++
+    ) {
+      const connectionBuffer: TerrainTexture[] = [];
+
+      for (let yIndex = 0; yIndex < 5; yIndex++) {
+        const textureSetBuffer: Texture[] = [];
+        for (let v = 0; v < 2; v++) {
+          for (let h = 0; h < 2; h++) {
+            const texture = new Texture({
+              source: spriteImage,
+              frame: new Rectangle(
+                spriteTileSize * xIndex + (spriteTileSize / 2) * h,
+                spriteTileSize * yIndex + (spriteTileSize / 2) * v,
+                spriteTileSize / 2,
+                spriteTileSize / 2
+              ),
+            });
+            textureSetBuffer.push(texture);
+          }
+        }
+        connectionBuffer.push({
+          topLeft: textureSetBuffer[0],
+          topRight: textureSetBuffer[1],
+          bottomLeft: textureSetBuffer[2],
+          bottomRight: textureSetBuffer[3],
+        });
+      }
+      result[(xIndex + 1) as TerrainId] = {
+        none: connectionBuffer[0],
+        y: connectionBuffer[1],
+        x: connectionBuffer[2],
+        xy: connectionBuffer[3],
+        xyd: connectionBuffer[4],
+      };
+    }
+    FieldComponent.terrainTextures = result;
+  }
+
   constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
     this.data = data;
     this.cellSize = cellSize;
     this.logic = new FieldLogic({ data });
   }
 
-  async setSprites() {
-    await FieldComponent.loadTerrainTextures();
+  setSprites() {
     const { terrainTextures } = FieldComponent;
     if (terrainTextures === null) {
       return;
@@ -141,55 +186,6 @@ export class FieldComponent {
     sprite.width = cellSize / 2;
     sprite.height = cellSize / 2;
     return sprite;
-  }
-
-  private static async loadTerrainTextures() {
-    if (FieldComponent.terrainTextures !== null) {
-      return;
-    }
-    const spriteImage = await Assets.load("/strategy/terrain.png");
-    const spriteTileSize = 40;
-
-    const result: Record<TerrainId, ConnectedTerrainTexture> = {};
-    for (
-      let xIndex = 0;
-      xIndex < spriteImage.width / spriteTileSize;
-      xIndex++
-    ) {
-      const connectionBuffer: TerrainTexture[] = [];
-
-      for (let yIndex = 0; yIndex < 5; yIndex++) {
-        const textureSetBuffer: Texture[] = [];
-        for (let v = 0; v < 2; v++) {
-          for (let h = 0; h < 2; h++) {
-            const texture = new Texture({
-              source: spriteImage,
-              frame: new Rectangle(
-                spriteTileSize * xIndex + (spriteTileSize / 2) * h,
-                spriteTileSize * yIndex + (spriteTileSize / 2) * v,
-                spriteTileSize / 2,
-                spriteTileSize / 2
-              ),
-            });
-            textureSetBuffer.push(texture);
-          }
-        }
-        connectionBuffer.push({
-          topLeft: textureSetBuffer[0],
-          topRight: textureSetBuffer[1],
-          bottomLeft: textureSetBuffer[2],
-          bottomRight: textureSetBuffer[3],
-        });
-      }
-      result[(xIndex + 1) as TerrainId] = {
-        none: connectionBuffer[0],
-        y: connectionBuffer[1],
-        x: connectionBuffer[2],
-        xy: connectionBuffer[3],
-        xyd: connectionBuffer[4],
-      };
-    }
-    FieldComponent.terrainTextures = result;
   }
 
   onHover(callback: ({ position }: { position: Position }) => void) {

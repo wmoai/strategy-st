@@ -4,8 +4,11 @@ import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
 import { CursorController } from "../cursor/CursorController";
+import { FieldComponent } from "../field/FieldComponent";
 import { FieldController } from "../field/FieldController";
+import type { Position } from "../field/FieldLogic";
 import { RangeController } from "../range/RangeController";
+import { UnitComponent } from "../unit/UnitComponent";
 import { UnitController } from "../unit/UnitController";
 
 type State =
@@ -15,6 +18,7 @@ type State =
     }
   | {
       type: "move";
+      hoveredUnit?: UnitController;
       unit: UnitController;
     }
   | {
@@ -28,6 +32,13 @@ const cellSize = 40;
 export class Game {
   app = new Application();
   state: State = { type: "map" };
+  controllers: {
+    field?: FieldController;
+    range?: RangeController;
+    playerUnits?: UnitController[];
+    enemyUnits?: UnitController[];
+    cursor?: CursorController;
+  } = {};
   layer = {
     field: new Container(),
     range: new Container(),
@@ -41,7 +52,7 @@ export class Game {
     height,
     isPlayerOffense,
     sortieUnits,
-    onHoverUnit,
+    onFocusUnit,
     onHoverTerrain,
   }: {
     canvas: HTMLCanvasElement;
@@ -52,9 +63,11 @@ export class Game {
       player: UnitDatum[];
       enemy: UnitDatum[];
     };
-    onHoverUnit: (unitController: UnitController) => void;
+    onFocusUnit: (unitController: UnitController) => void;
     onHoverTerrain: (terrain: TerrainDatum) => void;
   }) {
+    await FieldComponent.preload();
+    await UnitComponent.preload();
     await this.app.init({
       canvas,
       width,
@@ -69,82 +82,91 @@ export class Game {
     container.addChild(this.layer.cursor);
     this.app.stage.addChild(container);
 
-    const fieldController = await FieldController.random({ cellSize });
+    const fieldController = FieldController.random({ cellSize });
+    this.controllers.field = fieldController;
     this.layer.field.addChild(fieldController.container);
 
-    const rangeController = new RangeController({ cellSize });
-    this.layer.range.addChild(rangeController.container);
+    this.controllers.range = new RangeController({ cellSize });
+    this.layer.range.addChild(this.controllers.range.container);
 
     const playerInitPositions =
       fieldController.initialUnitPositions(isPlayerOffense);
-    const playerUnits = await Promise.all(
-      sortieUnits.player.map(async (unitData, index) => {
-        const position = playerInitPositions[index];
-        const unitController = await UnitController.create({
-          unitId: unitData.id,
-          cellSize,
-          isOffense: isPlayerOffense,
-          position,
-        });
-        this.layer.unit.addChild(unitController.container);
-        return unitController;
-      })
-    );
-
+    this.controllers.playerUnits = sortieUnits.player.map((unitData, index) => {
+      const position = playerInitPositions[index];
+      const unitController = new UnitController({
+        unitId: unitData.id,
+        cellSize,
+        isOffense: isPlayerOffense,
+        position,
+      });
+      this.layer.unit.addChild(unitController.container);
+      return unitController;
+    });
     const enemyInitPositions = fieldController.initialUnitPositions(
       !isPlayerOffense
     );
-    const enemyUnits = await Promise.all(
-      sortieUnits.enemy.map(async (unitData, index) => {
-        const position = enemyInitPositions[index];
-        const unitController = await UnitController.create({
-          unitId: unitData.id,
-          cellSize,
-          isOffense: !isPlayerOffense,
-          position,
-        });
-        this.layer.unit.addChild(unitController.container);
-        return unitController;
-      })
-    );
-
-    const cursorController = new CursorController({ cellSize });
-    this.layer.cursor.addChild(cursorController.graphic);
+    this.controllers.enemyUnits = sortieUnits.enemy.map((unitData, index) => {
+      const position = enemyInitPositions[index];
+      const unitController = new UnitController({
+        unitId: unitData.id,
+        cellSize,
+        isOffense: !isPlayerOffense,
+        position,
+      });
+      this.layer.unit.addChild(unitController.container);
+      return unitController;
+    });
+    this.controllers.cursor = new CursorController({ cellSize });
+    this.layer.cursor.addChild(this.controllers.cursor.graphic);
 
     container.x = this.app.screen.width / 2;
     container.pivot.x = container.width / 2;
 
-    // let hoveredUnit: UnitController | undefined = undefined;
     fieldController.onHover(({ position, terrain }) => {
-      cursorController.update(position);
-      if (this.state.type === "map") {
-        this.state.hoveredUnit = playerUnits
-          .concat(enemyUnits)
-          .find(
-            (unitModel) =>
-              unitModel.state.x === position.x &&
-              unitModel.state.y === position.y
-          );
-        if (this.state.hoveredUnit) {
-          onHoverUnit(this.state.hoveredUnit);
+      this.controllers.cursor?.update(position);
+      onHoverTerrain(terrain);
+      switch (this.state.type) {
+        case "map": {
+          const hoveredUnit = this.findUnitFromPosition(position);
+          if (hoveredUnit) {
+            this.state.hoveredUnit = hoveredUnit;
+            onFocusUnit(this.state.hoveredUnit);
+          }
+          break;
+        }
+        case "move": {
+          const hoveredUnit = this.findUnitFromPosition(position);
+          if (hoveredUnit) {
+            this.state.hoveredUnit = hoveredUnit;
+            onFocusUnit(this.state.hoveredUnit);
+          } else if (this.state.hoveredUnit) {
+            this.state.hoveredUnit = undefined;
+            onFocusUnit(this.state.unit);
+          }
+          break;
         }
       }
-      onHoverTerrain(terrain);
     });
     fieldController.component.onClick(() => {
-      if (this.state.type === "map" && this.state.hoveredUnit) {
-        rangeController.createRange({
-          field: fieldController.data,
-          unit: this.state.hoveredUnit,
-          opponentUnits:
-            isPlayerOffense === this.state.hoveredUnit.isOffense
-              ? enemyUnits
-              : playerUnits,
-        });
-        this.state = {
-          type: "move",
-          unit: this.state.hoveredUnit,
-        };
+      switch (this.state.type) {
+        case "map": {
+          if (!this.state.hoveredUnit) {
+            return;
+          }
+          this.controllers.range?.createRange({
+            field: fieldController.data,
+            unit: this.state.hoveredUnit,
+            opponentUnits:
+              (isPlayerOffense === this.state.hoveredUnit.isOffense
+                ? this.controllers.enemyUnits
+                : this.controllers.playerUnits) ?? [],
+          });
+          this.state = {
+            type: "move",
+            unit: this.state.hoveredUnit,
+          };
+          break;
+        }
       }
     });
 
@@ -154,8 +176,14 @@ export class Game {
       if (frame > 60) {
         frame -= 60;
       }
-      cursorController.animate(frame);
-      rangeController.animate(frame);
+      this.controllers.cursor?.animate(frame);
+      this.controllers.range?.animate(frame);
     });
+  }
+
+  findUnitFromPosition({ x, y }: Position) {
+    return this.controllers.playerUnits
+      ?.concat(this.controllers.enemyUnits ?? [])
+      .find((unitModel) => unitModel.state.x === x && unitModel.state.y === y);
   }
 }

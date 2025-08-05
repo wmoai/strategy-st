@@ -38,6 +38,36 @@ export class UnitComponent {
   private readonly maxHp: number;
   private readonly hpBarWidth: number;
 
+  static async preload() {
+    const spriteImage = await Assets.load("/strategy/units.png");
+    const spriteTileSize = 50;
+
+    const result: Record<KlassId, UnitTexture> = {};
+
+    for (let w = 0; w < spriteImage.width / spriteTileSize; w++) {
+      const klassId = (w + 1) as KlassId;
+      const buff: Texture[] = [];
+      for (let h = 0; h < 3; h++) {
+        const texture = new Texture({
+          source: spriteImage,
+          frame: new Rectangle(
+            spriteTileSize * w,
+            spriteTileSize * h,
+            spriteTileSize,
+            spriteTileSize
+          ),
+        });
+        buff.push(texture);
+      }
+      result[klassId] = {
+        gray: buff[0],
+        blue: buff[1],
+        red: buff[2],
+      };
+    }
+    UnitComponent.textures = result;
+  }
+
   constructor({ data, isOffense, cellSize }: ConstructorParams) {
     this.klassId = data.klass;
     this.cellSize = cellSize;
@@ -67,39 +97,6 @@ export class UnitComponent {
         this.components.greenLine,
       ],
     });
-  }
-
-  static async loadUnitTextures() {
-    if (UnitComponent.textures !== null) {
-      return;
-    }
-    const spriteImage = await Assets.load("/strategy/units.png");
-    const spriteTileSize = 50;
-
-    const result: Record<KlassId, UnitTexture> = {};
-
-    for (let w = 0; w < spriteImage.width / spriteTileSize; w++) {
-      const klassId = (w + 1) as KlassId;
-      const buff: Texture[] = [];
-      for (let h = 0; h < 3; h++) {
-        const texture = new Texture({
-          source: spriteImage,
-          frame: new Rectangle(
-            spriteTileSize * w,
-            spriteTileSize * h,
-            spriteTileSize,
-            spriteTileSize
-          ),
-        });
-        buff.push(texture);
-      }
-      result[klassId] = {
-        gray: buff[0],
-        blue: buff[1],
-        red: buff[2],
-      };
-    }
-    UnitComponent.textures = result;
   }
 
   private updateUnitSprite(state: UnitState) {

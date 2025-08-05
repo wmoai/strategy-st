@@ -18,7 +18,7 @@ export class UnitController {
 
   state: UnitState;
 
-  private constructor({
+  constructor({
     unitId,
     cellSize,
     isOffense,
@@ -41,28 +41,7 @@ export class UnitController {
       isActed: false,
     };
     this.component = new UnitComponent({ data, isOffense, cellSize });
-  }
-
-  static async create({
-    unitId,
-    cellSize,
-    isOffense,
-    position,
-  }: {
-    unitId: UnitId;
-    cellSize: number;
-    isOffense: boolean;
-    position: Position;
-  }) {
-    await UnitComponent.loadUnitTextures();
-    const instance = new UnitController({
-      unitId,
-      cellSize,
-      isOffense,
-      position,
-    });
-    instance.component.update(instance.state);
-    return instance;
+    this.component.update(this.state);
   }
 
   get container() {
