@@ -4,6 +4,7 @@ import type { Position } from "../field/FieldLogic";
 
 export class CursorController {
   private readonly cellSize: number;
+  private _position: Position = { x: 0, y: 0 };
   readonly graphic: Graphics;
 
   constructor({ cellSize }: { cellSize: number }) {
@@ -39,11 +40,14 @@ export class CursorController {
       .fill(0xeeeeee);
     this.graphic.pivot.x = cellSize / 2;
     this.graphic.pivot.y = cellSize / 2;
-
-    this.update({ x: 1, y: 1 });
   }
 
-  update({ x, y }: Position) {
+  get position() {
+    return { ...this._position };
+  }
+
+  setPosition({ x, y }: Position) {
+    this._position = { x, y };
     this.graphic.x = x * this.cellSize + this.cellSize / 2;
     this.graphic.y = y * this.cellSize + this.cellSize / 2 + 1;
   }

@@ -2,6 +2,7 @@ import type { FieldDatum } from "@/data/fieldData";
 
 import { RangeComponent } from "./RangeComponent";
 import { calculateRange, type RangeCell } from "./RangeLogic";
+import type { Position } from "../field/FieldLogic";
 import type { UnitController } from "../unit/UnitController";
 
 export class RangeController {
@@ -37,6 +38,24 @@ export class RangeController {
       ranges: this.ranges,
       isHealer: unit.isHealer,
     });
+  }
+
+  isMovable({ x, y }: Position) {
+    return this.ranges
+      ?.flat()
+      .some(
+        (range) =>
+          range.position.x === x && range.position.y === y && range.movable
+      );
+  }
+
+  isActable({ x, y }: Position) {
+    return this.ranges
+      ?.flat()
+      .some(
+        (range) =>
+          range.position.x === x && range.position.y === y && range.actable
+      );
   }
 
   removeRange() {

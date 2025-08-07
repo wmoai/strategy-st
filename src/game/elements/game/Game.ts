@@ -121,77 +121,17 @@ export class Game {
       return unitController;
     });
     this.controllers.cursor = new CursorController({ cellSize });
+    this.controllers.cursor.setPosition({ x: 1, y: 1 });
     this.layer.cursor.addChild(this.controllers.cursor.graphic);
 
     this.app.stage.x = this.app.screen.width / 2;
     this.app.stage.pivot.x = this.app.stage.width / 2;
 
-    this.setHoverHandler({ onFocusUnit, onFocusTerrain });
-    this.setClickHandler();
+    this.controllers.field?.onHover(({ position, terrain }) =>
+      this.moveCursor({ position, terrain, onFocusUnit, onFocusTerrain })
+    );
+    this.controllers.field?.component.onClick(() => this.selectCell());
     this.setTicker();
-  }
-
-  private setHoverHandler({
-    onFocusUnit,
-    onFocusTerrain,
-  }: {
-    onFocusUnit: (unitController: UnitController) => void;
-    onFocusTerrain: (terrain: TerrainDatum) => void;
-  }) {
-    this.controllers.field?.onHover(({ position, terrain }) => {
-      this.controllers.cursor?.update(position);
-      onFocusTerrain(terrain);
-      switch (this.state.type) {
-        case "map": {
-          const hoveredUnit = this.findUnitFromPosition(position);
-          if (hoveredUnit) {
-            this.state.hoveredUnit = hoveredUnit;
-            onFocusUnit(this.state.hoveredUnit);
-          }
-          break;
-        }
-        case "move": {
-          const hoveredUnit = this.findUnitFromPosition(position);
-          if (hoveredUnit) {
-            this.state.hoveredUnit = hoveredUnit;
-            onFocusUnit(this.state.hoveredUnit);
-          } else if (this.state.hoveredUnit) {
-            this.state.hoveredUnit = undefined;
-            onFocusUnit(this.state.unit);
-          }
-          break;
-        }
-      }
-    });
-  }
-
-  private setClickHandler() {
-    this.controllers.field?.component.onClick(() => {
-      const { field: fieldController } = this.controllers;
-      if (!fieldController) {
-        return;
-      }
-      switch (this.state.type) {
-        case "map": {
-          if (!this.state.hoveredUnit) {
-            return;
-          }
-          this.controllers.range?.createRange({
-            field: fieldController.data,
-            unit: this.state.hoveredUnit,
-            opponentUnits:
-              (this.isPlayerOffense === this.state.hoveredUnit.isOffense
-                ? this.controllers.enemyUnits
-                : this.controllers.playerUnits) ?? [],
-          });
-          this.state = {
-            type: "move",
-            unit: this.state.hoveredUnit,
-          };
-          break;
-        }
-      }
-    });
   }
 
   private setTicker() {
@@ -210,5 +150,99 @@ export class Game {
     return this.controllers.playerUnits
       ?.concat(this.controllers.enemyUnits ?? [])
       .find((unitModel) => unitModel.state.x === x && unitModel.state.y === y);
+  }
+
+  private moveCursor({
+    position,
+    terrain,
+    onFocusUnit,
+    onFocusTerrain,
+  }: {
+    position: Position;
+    terrain: TerrainDatum;
+    onFocusUnit: (unitController: UnitController) => void;
+    onFocusTerrain: (terrain: TerrainDatum) => void;
+  }) {
+    this.controllers.cursor?.setPosition(position);
+    onFocusTerrain(terrain);
+    switch (this.state.type) {
+      case "map": {
+        const hoveredUnit = this.findUnitFromPosition(position);
+        this.state.hoveredUnit = hoveredUnit;
+        if (hoveredUnit) {
+          onFocusUnit(hoveredUnit);
+        }
+        break;
+      }
+      case "move": {
+        const hoveredUnit = this.findUnitFromPosition(position);
+        if (hoveredUnit) {
+          this.state.hoveredUnit = hoveredUnit;
+          onFocusUnit(this.state.hoveredUnit);
+        } else if (this.state.hoveredUnit) {
+          this.state.hoveredUnit = undefined;
+          onFocusUnit(this.state.unit);
+        }
+        break;
+      }
+    }
+  }
+
+  private selectCell() {
+    switch (this.state.type) {
+      case "map": {
+        if (!this.state.hoveredUnit) {
+          return;
+        }
+        this.focusUnit({ unit: this.state.hoveredUnit });
+        return;
+      }
+      case "move": {
+        const { range: rangeController } = this.controllers;
+        const position = this.controllers.cursor?.position;
+        if (!rangeController || !position) {
+          return;
+        }
+        if (this.state.hoveredUnit === this.state.unit) {
+          // その場へ移動
+          return;
+        } else if (this.state.hoveredUnit) {
+          this.focusUnit({ unit: this.state.hoveredUnit });
+          return;
+        }
+        if (rangeController.isMovable(position)) {
+          // 移動
+          return;
+        } else {
+          // フォーカス解除
+          rangeController.removeRange();
+          this.state = {
+            type: "map",
+            hoveredUnit: this.state.hoveredUnit,
+          };
+          return;
+        }
+      }
+    }
+  }
+
+  private focusUnit({ unit }: { unit: UnitController }) {
+    const fieldData = this.controllers.field?.data;
+    if (!fieldData) {
+      return;
+    }
+
+    this.controllers.range?.createRange({
+      field: fieldData,
+      unit,
+      opponentUnits:
+        (this.isPlayerOffense === unit.isOffense
+          ? this.controllers.enemyUnits
+          : this.controllers.playerUnits) ?? [],
+    });
+    this.state = {
+      type: "move",
+      unit,
+    };
   }
 }
