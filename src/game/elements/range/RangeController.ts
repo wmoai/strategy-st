@@ -7,7 +7,7 @@ import type { UnitController } from "../unit/UnitController";
 
 export class RangeController {
   component: RangeComponent;
-  private ranges: RangeCell[][] | null = null;
+  private rangeCells: RangeCell[][] | null = null;
 
   constructor({ cellSize }: { cellSize: number }) {
     this.component = new RangeComponent({ cellSize });
@@ -17,7 +17,7 @@ export class RangeController {
     return this.component.container;
   }
 
-  createRange({
+  createMoveRange({
     field,
     unit,
     opponentUnits,
@@ -26,40 +26,88 @@ export class RangeController {
     unit: UnitController;
     opponentUnits: UnitController[];
   }) {
-    this.ranges = calculateRange({
+    this.rangeCells = calculateRange({
       field,
       noEntries: opponentUnits.map((unit) => ({
-        x: unit.state.x,
-        y: unit.state.y,
+        x: unit.position.x,
+        y: unit.position.y,
       })),
-      unit,
+      unit: unit.data,
+      position: unit.position,
     });
     this.component.set({
-      ranges: this.ranges,
+      rangeCells: this.rangeCells,
+      isHealer: unit.isHealer,
+    });
+  }
+
+  createActRange({
+    field,
+    unit,
+    position,
+  }: {
+    field: FieldDatum;
+    unit: UnitController;
+    position: Position;
+  }) {
+    this.rangeCells = calculateRange({
+      field,
+      unit: unit.data,
+      position,
+      forceMove: 0,
+    });
+    this.component.set({
+      rangeCells: this.rangeCells,
       isHealer: unit.isHealer,
     });
   }
 
   isMovable({ x, y }: Position) {
-    return this.ranges
+    return this.rangeCells
       ?.flat()
       .some(
-        (range) =>
-          range.position.x === x && range.position.y === y && range.movable
+        (rangeCell) =>
+          rangeCell.position.x === x &&
+          rangeCell.position.y === y &&
+          rangeCell.movable
       );
   }
 
   isActable({ x, y }: Position) {
-    return this.ranges
+    return this.rangeCells
       ?.flat()
       .some(
-        (range) =>
-          range.position.x === x && range.position.y === y && range.actable
+        (rangeCell) =>
+          rangeCell.position.x === x &&
+          rangeCell.position.y === y &&
+          rangeCell.actable
       );
   }
 
+  routeTo(to: Position): Position[] {
+    if (!this.rangeCells) {
+      return [];
+    }
+    const result: Position[] = [];
+    let currentPos = to;
+    const flatRanges = this.rangeCells.flat();
+    while (true) {
+      const current = flatRanges.find(
+        (item) =>
+          item.position.x === currentPos.x && item.position.y === currentPos.y
+      );
+      if (!current || !current.movablePrev) {
+        break;
+      }
+      result.push(current.position);
+      currentPos = current.movablePrev;
+    }
+    result.reverse();
+    return result;
+  }
+
   removeRange() {
-    this.ranges = null;
+    this.rangeCells = null;
     this.component.reset();
   }
 

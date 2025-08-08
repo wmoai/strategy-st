@@ -11,9 +11,15 @@ export class RangeComponent {
     this.cellSize = cellSize;
   }
 
-  set({ ranges, isHealer }: { ranges: RangeCell[][]; isHealer: boolean }) {
+  set({
+    rangeCells,
+    isHealer,
+  }: {
+    rangeCells: RangeCell[][];
+    isHealer: boolean;
+  }) {
     this.reset();
-    ranges.forEach((row, y) =>
+    rangeCells.forEach((row, y) =>
       row.forEach((rangeCell, x) => {
         if (rangeCell.movable || rangeCell.actable) {
           const color = rangeCell.movable

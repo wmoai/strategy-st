@@ -29,8 +29,7 @@ export const Battle: FC = () => {
     const game = new Game();
     game.run({
       canvas: canvasRef.current,
-      width: canvasWrapperRef.current.clientWidth,
-      height: canvasWrapperRef.current.clientHeight,
+      canvasWrapper: canvasWrapperRef.current,
       isPlayerOffense: sortie.isOffense,
       sortieUnits: sortie.units,
       onFocusUnit: setFocusedUnit,
@@ -71,7 +70,7 @@ export const Battle: FC = () => {
                     <div>
                       HP
                       <span className="ms-1 text-2xl text-green-300">
-                        {focusedUnit.state.currentHp}
+                        {focusedUnit.currentHp}
                       </span>
                       <span className="text-yellow-200">
                         /{focusedUnit.data.hp}

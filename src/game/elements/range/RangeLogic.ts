@@ -1,30 +1,35 @@
 import type { FieldDatum } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
+import type { UnitDatum } from "@/data/unitData";
 
 import { FieldLogic, type Position } from "../field/FieldLogic";
-import type { UnitController } from "../unit/UnitController";
 
 export type RangeCell = {
   position: Position;
   movable: boolean;
   actable: boolean;
   movablePrev: Position | null;
+  step: number;
 };
 
 export const calculateRange = ({
   field,
-  noEntries,
+  noEntries = [],
   unit,
+  position,
+  forceMove,
 }: {
   field: FieldDatum;
-  noEntries: Position[];
-  unit: UnitController;
+  noEntries?: Position[];
+  unit: UnitDatum;
+  position: Position;
+  forceMove?: number;
 }) => {
-  const klass = findKlass(unit.data.klass);
+  const klass = findKlass(unit.klass);
   if (!klass) {
     throw new Error("invalid unit data");
   }
-  const { move } = unit.data;
+  const move = forceMove ?? unit.move;
   const fieldLogic = new FieldLogic({ data: field });
 
   const calculatingMap: CalculatingCell[][] = fieldLogic.terrainRows.map(
@@ -32,7 +37,7 @@ export const calculateRange = ({
       return row.map((_, x) => {
         return {
           position: { x, y },
-          minimumStep: unit.state.x === x && unit.state.y === y ? 0 : Infinity,
+          minimumStep: position.x === x && position.y === y ? 0 : Infinity,
           isConfirmed: false,
           prevPosition: null,
         };
@@ -46,6 +51,7 @@ export const calculateRange = ({
       movable: false,
       actable: false,
       movablePrev: null,
+      step: Infinity,
     }))
   );
 
@@ -71,14 +77,14 @@ export const calculateRange = ({
     } = minimumStepCell;
     calculatingMap[y][x].isConfirmed = true;
     // set movable
-    result[y][x].movable = true;
-    result[y][x].movablePrev = minimumStepCell.prevPosition;
+    result[y][x] = {
+      ...result[y][x],
+      movable: true,
+      movablePrev: minimumStepCell.prevPosition,
+      step: minimumStepCell.minimumStep,
+    };
     // set actable
-    for (
-      let range = unit.data.min_range;
-      range <= unit.data.max_range;
-      range++
-    ) {
+    for (let range = unit.min_range; range <= unit.max_range; range++) {
       const angleUnit = 90 / range;
       for (let angle = 0; angle < 360; angle += angleUnit) {
         const rangeY = y + ((range * Math.sin(angle * (Math.PI / 180))) | 0);

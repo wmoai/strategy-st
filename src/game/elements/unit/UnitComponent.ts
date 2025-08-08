@@ -11,6 +11,8 @@ import type { KlassId } from "@/data/klassData";
 import { type UnitDatum } from "@/data/unitData";
 
 import type { UnitState } from "./UnitController";
+import type { Animation } from "../animation/Animation";
+import type { Position } from "../field/FieldLogic";
 
 type UnitTexture = {
   gray: Texture;
@@ -110,8 +112,8 @@ export class UnitComponent {
       ? unitTexture.red
       : unitTexture.blue;
     this.container.position.set(
-      state.x * this.cellSize,
-      state.y * this.cellSize
+      state.position.x * this.cellSize,
+      state.position.y * this.cellSize
     );
   }
 
@@ -125,5 +127,38 @@ export class UnitComponent {
   update(state: UnitState) {
     this.updateUnitSprite(state);
     this.updateGreenLineWidth(state);
+  }
+
+  moveAnimations(route: Position[]) {
+    const animations = route.map<Animation>((to) => {
+      const endCoordinates = {
+        x: to.x * this.cellSize,
+        y: to.y * this.cellSize,
+      };
+      return {
+        update: (deltaTime: number) => {
+          const distance = {
+            x: endCoordinates.x - this.container.x,
+            y: endCoordinates.y - this.container.y,
+          };
+          const speed = deltaTime * 8;
+          this.container.x =
+            distance.x > 0
+              ? Math.min(this.container.x + speed, endCoordinates.x)
+              : Math.max(this.container.x - speed, endCoordinates.x);
+          this.container.y =
+            distance.y > 0
+              ? Math.min(this.container.y + speed, endCoordinates.y)
+              : Math.max(this.container.y - speed, endCoordinates.y);
+        },
+        isFinished: () => {
+          return (
+            this.container.x === endCoordinates.x &&
+            this.container.y === endCoordinates.y
+          );
+        },
+      };
+    });
+    return animations;
   }
 }

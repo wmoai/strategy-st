@@ -2,7 +2,7 @@ import json from "./json/klass.json";
 
 export type KlassId = number & { readonly __brand: unique symbol };
 
-type KlassDatum = {
+export type KlassDatum = {
   id: KlassId;
   name: string;
   magical: number;

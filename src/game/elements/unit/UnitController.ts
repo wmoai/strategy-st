@@ -5,8 +5,7 @@ import { UnitComponent } from "./UnitComponent";
 import type { Position } from "../field/FieldLogic";
 
 export type UnitState = {
-  x: number;
-  y: number;
+  position: Position;
   isActed: boolean;
   currentHp: number;
 };
@@ -14,9 +13,8 @@ export type UnitState = {
 export class UnitController {
   readonly data: UnitDatum;
   readonly isOffense: boolean;
-  private component: UnitComponent;
-
-  state: UnitState;
+  component: UnitComponent;
+  private state: UnitState;
 
   constructor({
     unitId,
@@ -36,11 +34,15 @@ export class UnitController {
     this.data = data;
     this.isOffense = isOffense;
     this.state = {
-      ...position,
+      position,
       currentHp: data.hp,
       isActed: false,
     };
     this.component = new UnitComponent({ data, isOffense, cellSize });
+    this.updateComponent();
+  }
+
+  private updateComponent() {
     this.component.update(this.state);
   }
 
@@ -51,5 +53,27 @@ export class UnitController {
   get isHealer() {
     const klass = findKlass(this.data.klass);
     return klass?.healer === 1;
+  }
+
+  get position() {
+    return this.state.position;
+  }
+
+  get currentHp() {
+    return this.state.currentHp;
+  }
+
+  get isActed() {
+    return this.state.isActed;
+  }
+
+  reset() {
+    this.updateComponent();
+  }
+
+  standBy(position: Position) {
+    this.state.position = position;
+    this.state.isActed = true;
+    this.updateComponent();
   }
 }
