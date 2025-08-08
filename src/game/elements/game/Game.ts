@@ -52,12 +52,12 @@ export class Game {
   activeUnitLayer = new RenderLayer();
 
   constructor() {
-    const container = new Container();
-    container.addChild(this.containers.field);
-    container.addChild(this.containers.range);
-    container.addChild(this.containers.unit);
-    container.addChild(this.containers.cursor);
-    this.app.stage.addChild(container);
+    this.app.stage.addChild(
+      this.containers.field,
+      this.containers.range,
+      this.containers.unit,
+      this.containers.cursor
+    );
   }
 
   async run({
