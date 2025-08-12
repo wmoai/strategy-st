@@ -22,7 +22,6 @@ export const Battle: FC = () => {
     if (isRunning.current) {
       return;
     }
-    isRunning.current = true;
     Game.preload().then(() => {
       if (!canvasRef.current || !canvasWrapperRef.current) {
         return;
@@ -31,6 +30,7 @@ export const Battle: FC = () => {
         isPlayerOffense: sortie.isOffense,
         sortieUnits: sortie.units,
       });
+      isRunning.current = true;
       game.run({
         canvas: canvasRef.current,
         canvasWrapper: canvasWrapperRef.current,
