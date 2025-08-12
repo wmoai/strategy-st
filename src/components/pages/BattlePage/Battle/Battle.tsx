@@ -19,21 +19,24 @@ export const Battle: FC = () => {
   const [focusedTerrain, setFocusedTerrain] = useAtom(focusedTerrainAtom);
 
   useEffect(() => {
-    if (!canvasRef.current || !canvasWrapperRef.current) {
-      return;
-    }
     if (isRunning.current) {
       return;
     }
     isRunning.current = true;
-    const game = new Game();
-    game.run({
-      canvas: canvasRef.current,
-      canvasWrapper: canvasWrapperRef.current,
-      isPlayerOffense: sortie.isOffense,
-      sortieUnits: sortie.units,
-      onFocusUnit: setFocusedUnit,
-      onFocusTerrain: setFocusedTerrain,
+    Game.preload().then(() => {
+      if (!canvasRef.current || !canvasWrapperRef.current) {
+        return;
+      }
+      const game = new Game({
+        isPlayerOffense: sortie.isOffense,
+        sortieUnits: sortie.units,
+      });
+      game.run({
+        canvas: canvasRef.current,
+        canvasWrapper: canvasWrapperRef.current,
+        onFocusUnit: setFocusedUnit,
+        onFocusTerrain: setFocusedTerrain,
+      });
     });
   }, [setFocusedTerrain, setFocusedUnit, sortie.isOffense, sortie.units]);
 

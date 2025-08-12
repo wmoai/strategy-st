@@ -103,7 +103,7 @@ export class UnitComponent {
 
   private updateUnitSprite(state: UnitState) {
     if (!UnitComponent.textures) {
-      return;
+      throw new Error("unit textures not preloaded");
     }
     const unitTexture = UnitComponent.textures[this.klassId];
     this.components.unit.texture = state.isActed

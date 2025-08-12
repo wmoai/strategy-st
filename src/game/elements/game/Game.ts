@@ -3,12 +3,10 @@ import { Application, Container, RenderLayer } from "pixi.js";
 import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
+import { GameEnv } from "./GameEnv";
 import type { Animation } from "../animation/Animation";
-import { CursorController } from "../cursor/CursorController";
 import { FieldComponent } from "../field/FieldComponent";
-import { FieldController } from "../field/FieldController";
 import type { Position } from "../field/FieldLogic";
-import { RangeController } from "../range/RangeController";
 import { UnitComponent } from "../unit/UnitComponent";
 import { UnitController } from "../unit/UnitController";
 
@@ -33,15 +31,9 @@ const cellSize = 40;
 
 export class Game {
   app = new Application();
+  env: GameEnv;
   state: State = { type: "map" };
-  isPlayerOffense = true;
-  controllers: {
-    field?: FieldController;
-    range?: RangeController;
-    playerUnits?: UnitController[];
-    enemyUnits?: UnitController[];
-    cursor?: CursorController;
-  } = {};
+  isPlayerOffense: boolean;
   containers = {
     field: new Container(),
     range: new Container(),
@@ -51,7 +43,23 @@ export class Game {
   activeUnitLayer = new RenderLayer();
   animationQue: Array<Animation | (() => void)> = [];
 
-  constructor() {
+  static async preload() {
+    await FieldComponent.preload();
+    await UnitComponent.preload();
+  }
+
+  constructor({
+    isPlayerOffense,
+    sortieUnits,
+  }: {
+    isPlayerOffense: boolean;
+    sortieUnits: {
+      player: UnitDatum[];
+      enemy: UnitDatum[];
+    };
+  }) {
+    this.isPlayerOffense = isPlayerOffense;
+    this.env = new GameEnv({ isPlayerOffense, sortieUnits, cellSize });
     this.app.stage.addChild(
       this.containers.field,
       this.containers.range,
@@ -63,76 +71,38 @@ export class Game {
   async run({
     canvas,
     canvasWrapper,
-    isPlayerOffense,
-    sortieUnits,
     onFocusUnit,
     onFocusTerrain,
   }: {
     canvas: HTMLCanvasElement;
     canvasWrapper: HTMLElement;
-    isPlayerOffense: boolean;
-    sortieUnits: {
-      player: UnitDatum[];
-      enemy: UnitDatum[];
-    };
     onFocusUnit: (unitController: UnitController) => void;
     onFocusTerrain: (terrain: TerrainDatum) => void;
   }) {
-    await FieldComponent.preload();
-    await UnitComponent.preload();
     await this.app.init({
       canvas,
       resizeTo: canvasWrapper,
       backgroundColor: "#222",
     });
-    this.isPlayerOffense = isPlayerOffense;
 
-    const fieldController = FieldController.random({ cellSize });
-    this.controllers.field = fieldController;
-    this.containers.field.addChild(fieldController.container);
-
-    this.controllers.range = new RangeController({ cellSize });
-    this.containers.range.addChild(this.controllers.range.container);
-
-    const playerInitPositions =
-      fieldController.initialUnitPositions(isPlayerOffense);
-    this.controllers.playerUnits = sortieUnits.player.map((unitData, index) => {
-      const position = playerInitPositions[index];
-      const unitController = new UnitController({
-        unitId: unitData.id,
-        cellSize,
-        isOffense: isPlayerOffense,
-        position,
-      });
-      this.containers.unit.addChild(unitController.container);
-      return unitController;
-    });
-    const enemyInitPositions = fieldController.initialUnitPositions(
-      !isPlayerOffense
+    this.containers.field.addChild(this.env.field.container);
+    this.containers.range.addChild(this.env.range.container);
+    this.env.playerUnits.forEach((unit) =>
+      this.containers.unit.addChild(unit.container)
     );
-    this.controllers.enemyUnits = sortieUnits.enemy.map((unitData, index) => {
-      const position = enemyInitPositions[index];
-      const unitController = new UnitController({
-        unitId: unitData.id,
-        cellSize,
-        isOffense: !isPlayerOffense,
-        position,
-      });
-      this.containers.unit.addChild(unitController.container);
-      return unitController;
-    });
+    this.env.enemyUnits.forEach((unit) =>
+      this.containers.unit.addChild(unit.container)
+    );
     this.containers.unit.addChild(this.activeUnitLayer);
-    this.controllers.cursor = new CursorController({ cellSize });
-    this.controllers.cursor.setPosition({ x: 1, y: 1 });
-    this.containers.cursor.addChild(this.controllers.cursor.graphic);
+    this.containers.cursor.addChild(this.env.cursor.graphic);
 
     this.app.stage.x = this.app.screen.width / 2;
     this.app.stage.pivot.x = this.app.stage.width / 2;
 
-    this.controllers.field?.onHover(({ position, terrain }) =>
+    this.env.field.onHover(({ position, terrain }) =>
       this.moveCursor({ position, terrain, onFocusUnit, onFocusTerrain })
     );
-    this.controllers.field?.component.onClick(() => this.selectCell());
+    this.env.field.component.onClick(() => this.selectCell());
     this.setTicker();
   }
 
@@ -143,8 +113,8 @@ export class Game {
       if (frame > 60) {
         frame -= 60;
       }
-      this.controllers.cursor?.animate(frame);
-      this.controllers.range?.animate(frame);
+      this.env.cursor.animate(frame);
+      this.env.range.animate(frame);
 
       if (this.animationQue.length > 0) {
         const animation = this.animationQue[0];
@@ -161,13 +131,13 @@ export class Game {
     });
   }
 
-  get canOperate() {
-    return this.animationQue.length === 0;
+  get isWaiting() {
+    return this.animationQue.length > 0;
   }
 
   private findUnitFromPosition({ x, y }: Position) {
-    return this.controllers.playerUnits
-      ?.concat(this.controllers.enemyUnits ?? [])
+    return this.env.playerUnits
+      .concat(this.env.enemyUnits)
       .find((unit) => unit.position.x === x && unit.position.y === y);
   }
 
@@ -182,7 +152,7 @@ export class Game {
     onFocusUnit: (unitController: UnitController) => void;
     onFocusTerrain: (terrain: TerrainDatum) => void;
   }) {
-    this.controllers.cursor?.setPosition(position);
+    this.env.cursor.setPosition(position);
     onFocusTerrain(terrain);
     switch (this.state.type) {
       case "map": {
@@ -203,7 +173,7 @@ export class Game {
   }
 
   private selectCell() {
-    if (!this.canOperate) {
+    if (this.isWaiting) {
       return;
     }
     switch (this.state.type) {
@@ -216,11 +186,7 @@ export class Game {
         return;
       }
       case "focus": {
-        const { range: rangeController } = this.controllers;
-        const position = this.controllers.cursor?.position;
-        if (!rangeController || !position) {
-          return;
-        }
+        const position = this.env.cursor.position;
         const { focusedUnit, hoveredUnit } = this.state;
         if (
           hoveredUnit &&
@@ -231,13 +197,13 @@ export class Game {
           this.focusUnit({ unit: hoveredUnit });
           return;
         }
-        if (this.isMyUnit(focusedUnit) && rangeController.isMovable(position)) {
+        if (this.isMyUnit(focusedUnit) && this.env.range.isMovable(position)) {
           // 移動
           this.moveUnit({ unit: focusedUnit, position });
           return;
         } else {
           // フォーカス解除
-          rangeController.removeRange();
+          this.env.range.removeRange();
           this.state = {
             type: "map",
             hoveredUnit: this.state.hoveredUnit,
@@ -246,23 +212,19 @@ export class Game {
         }
       }
       case "act": {
-        const { cursor, range } = this.controllers;
-        if (!cursor || !range) {
-          return;
-        }
-        const position = cursor.position;
-        if (range.isActable(position) && this.state.target) {
+        const position = this.env.cursor.position;
+        if (this.env.range.isActable(position) && this.state.target) {
           // 行動確定
-        } else if (range.isMovable(position)) {
+        } else if (this.env.range.isMovable(position)) {
           // 待機
-          this.controllers.range?.removeRange();
+          this.env.range.removeRange();
           this.state.unit.standBy(this.state.position);
           this.state = {
             type: "map",
           };
         } else {
           // 移動キャンセル
-          range.removeRange();
+          this.env.range.removeRange();
           this.state.unit.reset();
           this.state = {
             type: "map",
@@ -273,18 +235,13 @@ export class Game {
   }
 
   private focusUnit({ unit }: { unit: UnitController }) {
-    const fieldData = this.controllers.field?.data;
-    if (!fieldData) {
-      return;
-    }
-
-    this.controllers.range?.createMoveRange({
-      field: fieldData,
+    this.env.range.createMoveRange({
+      field: this.env.field.data,
       unit,
       opponentUnits:
-        (this.isPlayerOffense === unit.isOffense
-          ? this.controllers.enemyUnits
-          : this.controllers.playerUnits) ?? [],
+        this.isPlayerOffense === unit.isOffense
+          ? this.env.enemyUnits
+          : this.env.playerUnits,
     });
     this.state = {
       type: "focus",
@@ -299,10 +256,7 @@ export class Game {
     unit: UnitController;
     position: Position;
   }) {
-    const route = this.controllers.range?.routeTo(position);
-    if (!route) {
-      return;
-    }
+    const route = this.env.range.routeTo(position);
     this.activeUnitLayer.attach(unit.container);
     this.animationQue = this.animationQue.concat(
       unit.component.moveAnimations(route),
@@ -311,7 +265,7 @@ export class Game {
         this.prepareAct({ unit, position });
       }
     );
-    this.controllers.range?.removeRange();
+    this.env.range.removeRange();
   }
 
   private prepareAct({
@@ -326,12 +280,8 @@ export class Game {
       position,
       unit,
     };
-    const fieldData = this.controllers.field?.data;
-    if (!fieldData) {
-      return;
-    }
-    this.controllers.range?.createActRange({
-      field: fieldData,
+    this.env.range.createActRange({
+      field: this.env.field.data,
       unit,
       position,
     });

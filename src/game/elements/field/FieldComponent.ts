@@ -92,7 +92,7 @@ export class FieldComponent {
   setSprites() {
     const { terrainTextures } = FieldComponent;
     if (terrainTextures === null) {
-      return;
+      throw new Error("terrain textures not preloaded");
     }
     const { width } = this.data;
     const { cellSize } = this;
