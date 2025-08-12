@@ -35,7 +35,10 @@ export class Game {
   layer = {
     activeUnit: new RenderLayer(),
   };
-  animationQue: Array<Animation | (() => void)> = [];
+  animationQue: Array<{
+    animations: Animation[];
+    onEnd?: () => void;
+  }> = [];
 
   static async preload() {
     await FieldComponent.preload();
@@ -103,15 +106,16 @@ export class Game {
       this.env.range.animate(frame);
 
       if (this.animationQue.length > 0) {
-        const animation = this.animationQue[0];
-        if (typeof animation === "function") {
-          animation();
-          this.animationQue.shift();
-        } else {
+        const { animations, onEnd } = this.animationQue[0];
+        const animation = animations[0];
+        if (animation) {
           animation.update(time.deltaTime);
           if (animation.isFinished()) {
-            this.animationQue.shift();
+            animations.shift();
           }
+        } else {
+          onEnd?.();
+          this.animationQue.shift();
         }
       }
     });
@@ -248,13 +252,13 @@ export class Game {
   }) {
     const route = this.env.range.routeTo(position);
     this.layer.activeUnit.attach(unit.container);
-    this.animationQue = this.animationQue.concat(
-      unit.component.moveAnimations(route),
-      () => {
+    this.animationQue.push({
+      animations: unit.component.moveAnimations(route),
+      onEnd: () => {
         this.layer.activeUnit.detach(unit.container);
         this.prepareAct({ unit, position });
-      }
-    );
+      },
+    });
     this.env.range.removeRange();
   }
 
