@@ -48,8 +48,8 @@ export class Game {
     unit: new Container(),
     cursor: new Container(),
   };
-  animationQue: Array<Animation | (() => void)> = [];
   activeUnitLayer = new RenderLayer();
+  animationQue: Array<Animation | (() => void)> = [];
 
   constructor() {
     this.app.stage.addChild(
@@ -222,7 +222,11 @@ export class Game {
           return;
         }
         const { focusedUnit, hoveredUnit } = this.state;
-        if (hoveredUnit && hoveredUnit !== focusedUnit) {
+        if (
+          hoveredUnit &&
+          hoveredUnit !== focusedUnit &&
+          !hoveredUnit.isActed
+        ) {
           // フォーカス対称変更
           this.focusUnit({ unit: hoveredUnit });
           return;
