@@ -27,6 +27,16 @@ type State =
       target?: UnitController;
     };
 
+type Constructor = {
+  isPlayerOffense: boolean;
+  sortieUnits: {
+    player: UnitDatum[];
+    enemy: UnitDatum[];
+  };
+  onFocusUnit: (unitController: UnitController) => void;
+  onFocusTerrain: (terrain: TerrainDatum) => void;
+};
+
 export class Game {
   app = new Application();
   env: GameEnv;
@@ -39,36 +49,37 @@ export class Game {
     animations: Animation[];
     onEnd?: () => void;
   }> = [];
+  handlers: {
+    onFocusUnit: (unitController: UnitController) => void;
+    onFocusTerrain: (terrain: TerrainDatum) => void;
+  };
 
-  static async preload() {
-    await FieldComponent.preload();
-    await UnitComponent.preload();
-  }
-
-  constructor({
+  private constructor({
     isPlayerOffense,
     sortieUnits,
-  }: {
-    isPlayerOffense: boolean;
-    sortieUnits: {
-      player: UnitDatum[];
-      enemy: UnitDatum[];
-    };
-  }) {
+    onFocusUnit,
+    onFocusTerrain,
+  }: Constructor) {
     this.isPlayerOffense = isPlayerOffense;
     this.env = new GameEnv({ isPlayerOffense, sortieUnits });
+    this.handlers = {
+      onFocusUnit,
+      onFocusTerrain,
+    };
+  }
+
+  static async create(args: Constructor) {
+    await FieldComponent.preload();
+    await UnitComponent.preload();
+    return new Game(args);
   }
 
   async run({
     canvas,
     canvasWrapper,
-    onFocusUnit,
-    onFocusTerrain,
   }: {
     canvas: HTMLCanvasElement;
     canvasWrapper: HTMLElement;
-    onFocusUnit: (unitController: UnitController) => void;
-    onFocusTerrain: (terrain: TerrainDatum) => void;
   }) {
     await this.app.init({
       canvas,
@@ -84,12 +95,13 @@ export class Game {
       this.env.cursor.graphic,
       this.layer.activeUnit
     );
+    this.moveCursor({ position: this.env.playerUnits[0].position });
 
     this.app.stage.x = this.app.screen.width / 2;
     this.app.stage.pivot.x = this.app.stage.width / 2;
 
-    this.env.field.onHover(({ position, terrain }) =>
-      this.moveCursor({ position, terrain, onFocusUnit, onFocusTerrain })
+    this.env.field.component.onHover(({ position }) =>
+      this.moveCursor({ position })
     );
     this.env.field.component.onClick(() => this.selectCell());
     this.setTicker();
@@ -135,32 +147,23 @@ export class Game {
     return this.isPlayerOffense === unit.isOffense;
   }
 
-  private moveCursor({
-    position,
-    terrain,
-    onFocusUnit,
-    onFocusTerrain,
-  }: {
-    position: Position;
-    terrain: TerrainDatum;
-    onFocusUnit: (unitController: UnitController) => void;
-    onFocusTerrain: (terrain: TerrainDatum) => void;
-  }) {
+  private moveCursor({ position }: { position: Position }) {
+    const terrain = this.env.field.logic.terrain(position);
     this.env.cursor.setPosition(position);
-    onFocusTerrain(terrain);
+    this.handlers.onFocusTerrain(terrain);
     switch (this.state.type) {
       case "map": {
         const hoveredUnit = this.findUnitFromPosition(position);
         this.state.hoveredUnit = hoveredUnit;
         if (hoveredUnit) {
-          onFocusUnit(hoveredUnit);
+          this.handlers.onFocusUnit(hoveredUnit);
         }
         break;
       }
       case "focus": {
         const hoveredUnit = this.findUnitFromPosition(position);
         this.state.hoveredUnit = hoveredUnit;
-        onFocusUnit(hoveredUnit ?? this.state.focusedUnit);
+        this.handlers.onFocusUnit(hoveredUnit ?? this.state.focusedUnit);
         break;
       }
     }

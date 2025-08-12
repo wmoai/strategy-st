@@ -53,6 +53,5 @@ export class GameEnv {
     });
 
     this.cursor = new CursorController({ cellSize });
-    this.cursor.setPosition({ x: 1, y: 1 });
   }
 }
