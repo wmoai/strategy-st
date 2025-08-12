@@ -31,27 +31,27 @@ export class GameEnv {
       this.field.initialUnitPositions(isPlayerOffense);
     this.playerUnits = sortieUnits.player.map((unitData, index) => {
       const position = playerInitPositions[index];
-      const unitController = new UnitController({
+      return new UnitController({
         unitId: unitData.id,
         cellSize,
         isOffense: isPlayerOffense,
         position,
       });
-      return unitController;
     });
+
     const enemyInitPositions = this.field.initialUnitPositions(
       !isPlayerOffense
     );
     this.enemyUnits = sortieUnits.enemy.map((unitData, index) => {
       const position = enemyInitPositions[index];
-      const unitController = new UnitController({
+      return new UnitController({
         unitId: unitData.id,
         cellSize,
         isOffense: !isPlayerOffense,
         position,
       });
-      return unitController;
     });
+
     this.cursor = new CursorController({ cellSize });
     this.cursor.setPosition({ x: 1, y: 1 });
   }

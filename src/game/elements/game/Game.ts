@@ -1,4 +1,4 @@
-import { Application, Container, RenderLayer } from "pixi.js";
+import { Application, RenderLayer } from "pixi.js";
 
 import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
@@ -34,13 +34,9 @@ export class Game {
   env: GameEnv;
   state: State = { type: "map" };
   isPlayerOffense: boolean;
-  containers = {
-    field: new Container(),
-    range: new Container(),
-    unit: new Container(),
-    cursor: new Container(),
+  layer = {
+    activeUnit: new RenderLayer(),
   };
-  activeUnitLayer = new RenderLayer();
   animationQue: Array<Animation | (() => void)> = [];
 
   static async preload() {
@@ -60,12 +56,6 @@ export class Game {
   }) {
     this.isPlayerOffense = isPlayerOffense;
     this.env = new GameEnv({ isPlayerOffense, sortieUnits, cellSize });
-    this.app.stage.addChild(
-      this.containers.field,
-      this.containers.range,
-      this.containers.unit,
-      this.containers.cursor
-    );
   }
 
   async run({
@@ -85,16 +75,14 @@ export class Game {
       backgroundColor: "#222",
     });
 
-    this.containers.field.addChild(this.env.field.container);
-    this.containers.range.addChild(this.env.range.container);
-    this.env.playerUnits.forEach((unit) =>
-      this.containers.unit.addChild(unit.container)
+    this.app.stage.addChild(
+      this.env.field.container,
+      this.env.range.container,
+      ...this.env.playerUnits.map((unit) => unit.container),
+      ...this.env.enemyUnits.map((unit) => unit.container),
+      this.env.cursor.graphic,
+      this.layer.activeUnit
     );
-    this.env.enemyUnits.forEach((unit) =>
-      this.containers.unit.addChild(unit.container)
-    );
-    this.containers.unit.addChild(this.activeUnitLayer);
-    this.containers.cursor.addChild(this.env.cursor.graphic);
 
     this.app.stage.x = this.app.screen.width / 2;
     this.app.stage.pivot.x = this.app.stage.width / 2;
@@ -139,6 +127,10 @@ export class Game {
     return this.env.playerUnits
       .concat(this.env.enemyUnits)
       .find((unit) => unit.position.x === x && unit.position.y === y);
+  }
+
+  isMyUnit(unit: UnitController) {
+    return this.isPlayerOffense === unit.isOffense;
   }
 
   private moveCursor({
@@ -257,11 +249,11 @@ export class Game {
     position: Position;
   }) {
     const route = this.env.range.routeTo(position);
-    this.activeUnitLayer.attach(unit.container);
+    this.layer.activeUnit.attach(unit.container);
     this.animationQue = this.animationQue.concat(
       unit.component.moveAnimations(route),
       () => {
-        this.activeUnitLayer.detach(unit.container);
+        this.layer.activeUnit.detach(unit.container);
         this.prepareAct({ unit, position });
       }
     );
@@ -285,9 +277,5 @@ export class Game {
       unit,
       position,
     });
-  }
-
-  isMyUnit(unit: UnitController) {
-    return this.isPlayerOffense === unit.isOffense;
   }
 }
