@@ -27,8 +27,6 @@ type State =
       target?: UnitController;
     };
 
-const cellSize = 40;
-
 export class Game {
   app = new Application();
   env: GameEnv;
@@ -55,7 +53,7 @@ export class Game {
     };
   }) {
     this.isPlayerOffense = isPlayerOffense;
-    this.env = new GameEnv({ isPlayerOffense, sortieUnits, cellSize });
+    this.env = new GameEnv({ isPlayerOffense, sortieUnits });
   }
 
   async run({

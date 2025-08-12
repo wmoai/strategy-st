@@ -5,6 +5,8 @@ import { FieldController } from "../field/FieldController";
 import { RangeController } from "../range/RangeController";
 import { UnitController } from "../unit/UnitController";
 
+const cellSize = 40;
+
 export class GameEnv {
   field: FieldController;
   range: RangeController;
@@ -15,14 +17,12 @@ export class GameEnv {
   constructor({
     isPlayerOffense,
     sortieUnits,
-    cellSize,
   }: {
     isPlayerOffense: boolean;
     sortieUnits: {
       player: UnitDatum[];
       enemy: UnitDatum[];
     };
-    cellSize: number;
   }) {
     this.field = FieldController.random({ cellSize });
     this.range = new RangeController({ cellSize });
