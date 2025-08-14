@@ -48,23 +48,29 @@ export class ActState extends GameState {
     if (this.env.controllers.range.isActable(position) && this.target) {
       // 行動確定
     } else if (this.env.controllers.range.isMovable(position)) {
-      // 待機
-      this.env.controllers.range.removeRange();
-      this.unit.standBy(this.position);
-      this.env.changeState(
-        new MapState({
-          env: this.env,
-        })
-      );
+      this.standBy();
     } else {
-      // 移動キャンセル
-      this.env.controllers.range.removeRange();
-      this.unit.reset();
-      this.env.changeState(
-        new MapState({
-          env: this.env,
-        })
-      );
+      this.cancelMove();
     }
+  }
+
+  private standBy() {
+    this.env.controllers.range.removeRange();
+    this.unit.standBy(this.position);
+    this.env.changeState(
+      new MapState({
+        env: this.env,
+      })
+    );
+  }
+
+  private cancelMove() {
+    this.env.controllers.range.removeRange();
+    this.unit.reset();
+    this.env.changeState(
+      new MapState({
+        env: this.env,
+      })
+    );
   }
 }

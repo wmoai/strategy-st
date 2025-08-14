@@ -36,9 +36,12 @@ export class MapState extends GameState {
       return;
     }
     const unit = this.hoveredUnit;
-    if (!unit || unit.isActed) {
-      return;
+    if (unit && !unit.isActed) {
+      this.focusUnit(unit);
     }
+  }
+
+  private focusUnit(unit: UnitController) {
     this.env.changeState(
       new FocusState({
         env: this.env,

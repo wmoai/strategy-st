@@ -44,25 +44,22 @@ export class FocusState extends GameState {
     }
     const position = this.env.controllers.cursor.position;
     const { focusedUnit, hoveredUnit } = this;
+
     if (hoveredUnit && hoveredUnit !== focusedUnit && !hoveredUnit.isActed) {
-      // フォーカス対称変更
-      this.focusedUnit = hoveredUnit;
-      this.env.showUnitRange({ unit: hoveredUnit });
+      this.changeFocusUnit(hoveredUnit);
     } else if (
       this.env.isMyUnit(focusedUnit) &&
       this.env.controllers.range.isMovable(position)
     ) {
-      // 移動
       this.moveUnit({ unit: focusedUnit, position });
     } else {
-      // フォーカス解除
-      this.env.changeState(
-        new MapState({
-          env: this.env,
-          hoveredUnit: this.hoveredUnit,
-        })
-      );
+      this.cancelFocus();
     }
+  }
+
+  private changeFocusUnit(unit: UnitController) {
+    this.focusedUnit = unit;
+    this.env.showUnitRange({ unit });
   }
 
   private moveUnit({
@@ -88,5 +85,14 @@ export class FocusState extends GameState {
       },
     });
     this.env.controllers.range.removeRange();
+  }
+
+  private cancelFocus() {
+    this.env.changeState(
+      new MapState({
+        env: this.env,
+        hoveredUnit: this.hoveredUnit,
+      })
+    );
   }
 }
