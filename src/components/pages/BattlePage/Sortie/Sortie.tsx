@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useMemo, useState, type FC } from "react";
 import { tv } from "tailwind-variants";
 
-import { unitData, type UnitDatum } from "@/data/unitData";
+import { units, type UnitData } from "@/data/unitData";
 import { battleStepAtom, sortieAtom } from "@/features/battle/battleAtom";
 import { deckAtom } from "@/features/deck/deckAtom";
 import { getRandomUnits } from "@/features/deck/deckLogic";
@@ -21,10 +21,10 @@ export const Sortie: FC = () => {
     }, 0);
   }, [deck, selectedIndexes]);
   const enemies = useMemo(() => {
-    const common = unitData.filter((unit) => unit.cost === 3);
-    const veteran = unitData.filter((unit) => unit.cost === 4);
-    const hero = unitData.filter((unit) => unit.cost === 5);
-    return ([] as UnitDatum[]).concat(
+    const common = units.filter((unit) => unit.cost === 3);
+    const veteran = units.filter((unit) => unit.cost === 4);
+    const hero = units.filter((unit) => unit.cost === 5);
+    return ([] as UnitData[]).concat(
       getRandomUnits(common, 3),
       getRandomUnits(veteran, 2),
       getRandomUnits(hero, 1)

@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 
-import type { TerrainDatum } from "@/data/terrainData";
-import type { UnitDatum } from "@/data/unitData";
+import type { TerrainData } from "@/data/terrainData";
+import type { UnitData } from "@/data/unitData";
 import type { UnitController } from "@/game/elements/unit/UnitController";
 
 export const battleStepAtom = atom<"sortie" | "battle">("sortie");
@@ -9,8 +9,8 @@ export const battleStepAtom = atom<"sortie" | "battle">("sortie");
 export const sortieAtom = atom<{
   isOffense: boolean;
   units: {
-    player: UnitDatum[];
-    enemy: UnitDatum[];
+    player: UnitData[];
+    enemy: UnitData[];
   };
 }>({
   isOffense: true,
@@ -21,4 +21,4 @@ export const sortieAtom = atom<{
 });
 
 export const focusedUnitAtom = atom<UnitController | undefined>();
-export const focusedTerrainAtom = atom<TerrainDatum | undefined>();
+export const focusedTerrainAtom = atom<TerrainData | undefined>();

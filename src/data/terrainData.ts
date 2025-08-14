@@ -2,7 +2,7 @@ import json from "./json/terrain.json";
 
 export type TerrainId = number & { readonly _brand: unique symbol };
 
-export type TerrainDatum = {
+export type TerrainData = {
   id: TerrainId;
   name: string;
   avoid: number;
@@ -12,9 +12,9 @@ export type TerrainDatum = {
   fly: number;
 };
 
-const data = json as TerrainDatum[];
+const terrains = json as TerrainData[];
 
-export const terrainIds = data.map((terrain) => terrain.id);
+export const terrainIds = terrains.map((terrain) => terrain.id);
 
-export const terrainDataMap: Record<TerrainId, TerrainDatum> =
-  Object.fromEntries(data.map((terrain) => [terrain.id, terrain]));
+export const terrainDataMap: Record<TerrainId, TerrainData> =
+  Object.fromEntries(terrains.map((terrain) => [terrain.id, terrain]));

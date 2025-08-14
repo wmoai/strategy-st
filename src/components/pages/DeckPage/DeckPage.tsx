@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import { TopNavigation } from "@/components/parts/TopNavigation";
 import { UnitCardList } from "@/components/parts/UnitCardList";
-import { unitData } from "@/data/unitData";
+import { units } from "@/data/unitData";
 import { DECK_SIZE, useDeck } from "@/features/deck/useDeck";
 
 export const DeckPage: FC = () => {
@@ -57,10 +57,7 @@ export const DeckPage: FC = () => {
             <h2 className={sectionHeadingTv()}>POOL</h2>
           </header>
           <div className={listWrapperTv()}>
-            <UnitCardList
-              units={unitData}
-              onClickUnit={(unit) => addUnit(unit)}
-            />
+            <UnitCardList units={units} onClickUnit={(unit) => addUnit(unit)} />
           </div>
         </section>
       </main>

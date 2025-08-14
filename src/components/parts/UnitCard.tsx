@@ -1,11 +1,11 @@
 import type { FC } from "react";
 
-import type { UnitDatum } from "@/data/unitData";
+import type { UnitData } from "@/data/unitData";
 
 import { UnitImage } from "./UnitImage";
 
 type Props = {
-  unit: UnitDatum;
+  unit: UnitData;
 };
 
 export const UnitCard: FC<Props> = ({ unit }) => {

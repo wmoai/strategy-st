@@ -1,13 +1,13 @@
 import type { FC } from "react";
 
-import type { UnitDatum } from "@/data/unitData";
+import type { UnitData } from "@/data/unitData";
 
 import { UnitCard } from "../UnitCard";
 import { ButtonOrFragment } from "./ButtonOrFragment";
 
 type Props = {
-  units: UnitDatum[];
-  onClickUnit?: (unit: UnitDatum, index: number) => void;
+  units: UnitData[];
+  onClickUnit?: (unit: UnitData, index: number) => void;
 };
 
 export const UnitCardList: FC<Props> = ({ units, onClickUnit }) => {

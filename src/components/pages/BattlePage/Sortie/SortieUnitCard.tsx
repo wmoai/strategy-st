@@ -2,10 +2,10 @@ import type { FC } from "react";
 import { tv } from "tailwind-variants";
 
 import { UnitImage } from "@/components/parts/UnitImage";
-import type { UnitDatum } from "@/data/unitData";
+import type { UnitData } from "@/data/unitData";
 
 type Props = {
-  unit: UnitDatum;
+  unit: UnitData;
   isOffense: boolean;
   isSelected?: boolean;
 };

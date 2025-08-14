@@ -1,8 +1,8 @@
 import { Application, RenderLayer } from "pixi.js";
 
 import type { Position } from "@/data/fieldData";
-import type { TerrainDatum } from "@/data/terrainData";
-import type { UnitDatum } from "@/data/unitData";
+import type { TerrainData } from "@/data/terrainData";
+import type { UnitData } from "@/data/unitData";
 
 import { GameEnv } from "./GameEnv";
 import type { Animation } from "../animation/Animation";
@@ -30,11 +30,11 @@ type State =
 type Constructor = {
   isPlayerOffense: boolean;
   sortieUnits: {
-    player: UnitDatum[];
-    enemy: UnitDatum[];
+    player: UnitData[];
+    enemy: UnitData[];
   };
   onFocusUnit: (unitController: UnitController) => void;
-  onFocusTerrain: (terrain: TerrainDatum) => void;
+  onFocusTerrain: (terrain: TerrainData) => void;
 };
 
 export class Game {
@@ -51,7 +51,7 @@ export class Game {
   }> = [];
   handlers: {
     onFocusUnit: (unitController: UnitController) => void;
-    onFocusTerrain: (terrain: TerrainDatum) => void;
+    onFocusTerrain: (terrain: TerrainData) => void;
   };
 
   private constructor({

@@ -1,6 +1,6 @@
 import type { FieldData, Position } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
-import type { UnitDatum } from "@/data/unitData";
+import type { UnitData } from "@/data/unitData";
 
 import type { RangeCell } from "./RangeController";
 
@@ -20,7 +20,7 @@ export const calculateShortestPath = ({
 }: {
   field: FieldData;
   noEntries?: Position[];
-  unit: UnitDatum;
+  unit: UnitData;
   position: Position;
   forceMove?: number;
 }) => {

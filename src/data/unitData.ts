@@ -3,7 +3,7 @@ import type { KlassId } from "./klassData";
 
 export type UnitId = number & { readonly __brand: unique symbol };
 
-export type UnitDatum = {
+export type UnitData = {
   id: UnitId;
   name: string;
   hp: number;
@@ -18,7 +18,7 @@ export type UnitDatum = {
   klass: KlassId;
 };
 
-export const unitData: UnitDatum[] = json.map((item) => item as UnitDatum);
+export const units: UnitData[] = json.map((item) => item as UnitData);
 
-export const findUnitDatum = (id: UnitId) =>
-  unitData.find((unit) => unit.id === id);
+export const findUnitData = (id: UnitId) =>
+  units.find((unit) => unit.id === id);

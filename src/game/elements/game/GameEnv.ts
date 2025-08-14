@@ -1,4 +1,4 @@
-import type { UnitDatum } from "@/data/unitData";
+import type { UnitData } from "@/data/unitData";
 
 import { CursorController } from "../cursor/CursorController";
 import { FieldController } from "../field/FieldController";
@@ -20,8 +20,8 @@ export class GameEnv {
   }: {
     isPlayerOffense: boolean;
     sortieUnits: {
-      player: UnitDatum[];
-      enemy: UnitDatum[];
+      player: UnitData[];
+      enemy: UnitData[];
     };
   }) {
     this.field = FieldController.random({ cellSize });

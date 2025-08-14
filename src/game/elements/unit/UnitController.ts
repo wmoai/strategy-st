@@ -1,6 +1,6 @@
 import type { Position } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
-import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
+import { findUnitData, type UnitData, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
 
@@ -11,7 +11,7 @@ export type UnitState = {
 };
 
 export class UnitController {
-  readonly data: UnitDatum;
+  readonly data: UnitData;
   readonly isOffense: boolean;
   component: UnitComponent;
   private state: UnitState;
@@ -27,7 +27,7 @@ export class UnitController {
     isOffense: boolean;
     position: Position;
   }) {
-    const data = findUnitDatum(unitId);
+    const data = findUnitData(unitId);
     if (!data) {
       throw new Error("invalid unitId");
     }

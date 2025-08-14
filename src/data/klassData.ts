@@ -2,7 +2,7 @@ import json from "./json/klass.json";
 
 export type KlassId = number & { readonly __brand: unique symbol };
 
-export type KlassDatum = {
+export type KlassData = {
   id: KlassId;
   name: string;
   magical: number;
@@ -10,7 +10,7 @@ export type KlassDatum = {
   move: "foot" | "horse" | "hover";
 };
 
-export const klassData = json as KlassDatum[];
+export const klasses = json as KlassData[];
 
 export const findKlass = (id: KlassId) =>
-  klassData.find((klass) => klass.id === id);
+  klasses.find((klass) => klass.id === id);

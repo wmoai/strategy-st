@@ -9,7 +9,7 @@ import {
 
 import type { Position } from "@/data/fieldData";
 import type { KlassId } from "@/data/klassData";
-import { type UnitDatum } from "@/data/unitData";
+import { type UnitData } from "@/data/unitData";
 
 import type { UnitState } from "./UnitController";
 import type { Animation } from "../animation/Animation";
@@ -21,7 +21,7 @@ type UnitTexture = {
 };
 
 type ConstructorParams = {
-  data: UnitDatum;
+  data: UnitData;
   isOffense: boolean;
   cellSize: number;
 };
