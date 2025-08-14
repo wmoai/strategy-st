@@ -185,19 +185,4 @@ export class FieldComponent {
     sprite.height = cellSize / 2;
     return sprite;
   }
-
-  onHover(callback: ({ position }: { position: Position }) => void) {
-    this.container.on("globalpointermove", (e) => {
-      const localPos = e.getLocalPosition(this.container);
-      const actualPos = {
-        x: Math.floor(localPos.x / this.cellSize),
-        y: Math.floor(localPos.y / this.cellSize),
-      };
-      callback({ position: actualPos });
-    });
-  }
-
-  onClick(callback: () => void) {
-    this.container.on("click", callback);
-  }
 }
