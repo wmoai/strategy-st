@@ -1,8 +1,16 @@
 import type { FieldData, Position } from "@/data/fieldData";
 
+import { calculateShortestPath } from "./calculateShortestPath";
 import { RangeComponent } from "./RangeComponent";
-import { calculateRange, type RangeCell } from "./RangeLogic";
 import type { UnitController } from "../unit/UnitController";
+
+export type RangeCell = {
+  position: Position;
+  movable: boolean;
+  actable: boolean;
+  movablePrev: Position | null;
+  step: number;
+};
 
 export class RangeController {
   component: RangeComponent;
@@ -25,7 +33,7 @@ export class RangeController {
     unit: UnitController;
     opponentUnits: UnitController[];
   }) {
-    this.rangeCells = calculateRange({
+    this.rangeCells = calculateShortestPath({
       field,
       noEntries: opponentUnits.map((unit) => ({
         x: unit.position.x,
@@ -49,7 +57,7 @@ export class RangeController {
     unit: UnitController;
     position: Position;
   }) {
-    this.rangeCells = calculateRange({
+    this.rangeCells = calculateShortestPath({
       field,
       unit: unit.data,
       position,

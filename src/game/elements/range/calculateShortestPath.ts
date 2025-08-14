@@ -2,15 +2,16 @@ import type { FieldData, Position } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
 import type { UnitDatum } from "@/data/unitData";
 
-export type RangeCell = {
+import type { RangeCell } from "./RangeController";
+
+type CalculatingCell = {
   position: Position;
-  movable: boolean;
-  actable: boolean;
-  movablePrev: Position | null;
-  step: number;
+  minimumStep: number;
+  isConfirmed: boolean;
+  prevPosition: Position | null;
 };
 
-export const calculateRange = ({
+export const calculateShortestPath = ({
   field,
   noEntries = [],
   unit,
@@ -126,11 +127,4 @@ export const calculateRange = ({
   };
   dijkstraAlgoLoop();
   return result;
-};
-
-type CalculatingCell = {
-  position: Position;
-  minimumStep: number;
-  isConfirmed: boolean;
-  prevPosition: Position | null;
 };
