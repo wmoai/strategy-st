@@ -1,6 +1,6 @@
 import { Graphics } from "pixi.js";
 
-import type { Position } from "../field/FieldLogic";
+import type { Position } from "@/data/fieldData";
 
 export class CursorController {
   private readonly cellSize: number;

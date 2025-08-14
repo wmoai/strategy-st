@@ -1,12 +1,12 @@
 import { Application, RenderLayer } from "pixi.js";
 
+import type { Position } from "@/data/fieldData";
 import type { TerrainDatum } from "@/data/terrainData";
 import type { UnitDatum } from "@/data/unitData";
 
 import { GameEnv } from "./GameEnv";
 import type { Animation } from "../animation/Animation";
 import { FieldComponent } from "../field/FieldComponent";
-import type { Position } from "../field/FieldLogic";
 import { UnitComponent } from "../unit/UnitComponent";
 import { UnitController } from "../unit/UnitController";
 
@@ -148,7 +148,10 @@ export class Game {
   }
 
   private moveCursor({ position }: { position: Position }) {
-    const terrain = this.env.field.logic.terrain(position);
+    if (!this.env.field.data.isActiveCell(position)) {
+      return;
+    }
+    const terrain = this.env.field.data.getTerrain(position);
     this.env.cursor.setPosition(position);
     this.handlers.onFocusTerrain(terrain);
     switch (this.state.type) {

@@ -1,8 +1,7 @@
-import type { FieldDatum } from "@/data/fieldData";
+import type { FieldData, Position } from "@/data/fieldData";
 
 import { RangeComponent } from "./RangeComponent";
 import { calculateRange, type RangeCell } from "./RangeLogic";
-import type { Position } from "../field/FieldLogic";
 import type { UnitController } from "../unit/UnitController";
 
 export class RangeController {
@@ -22,7 +21,7 @@ export class RangeController {
     unit,
     opponentUnits,
   }: {
-    field: FieldDatum;
+    field: FieldData;
     unit: UnitController;
     opponentUnits: UnitController[];
   }) {
@@ -46,7 +45,7 @@ export class RangeController {
     unit,
     position,
   }: {
-    field: FieldDatum;
+    field: FieldData;
     unit: UnitController;
     position: Position;
   }) {

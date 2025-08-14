@@ -1,8 +1,8 @@
+import type { Position } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
 import { findUnitDatum, type UnitDatum, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
-import type { Position } from "../field/FieldLogic";
 
 export type UnitState = {
   position: Position;

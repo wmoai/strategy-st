@@ -7,12 +7,12 @@ import {
   Texture,
 } from "pixi.js";
 
+import type { Position } from "@/data/fieldData";
 import type { KlassId } from "@/data/klassData";
 import { type UnitDatum } from "@/data/unitData";
 
 import type { UnitState } from "./UnitController";
 import type { Animation } from "../animation/Animation";
-import type { Position } from "../field/FieldLogic";
 
 type UnitTexture = {
   gray: Texture;

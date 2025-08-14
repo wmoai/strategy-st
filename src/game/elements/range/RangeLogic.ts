@@ -1,8 +1,6 @@
-import type { FieldDatum } from "@/data/fieldData";
+import type { FieldData, Position } from "@/data/fieldData";
 import { findKlass } from "@/data/klassData";
 import type { UnitDatum } from "@/data/unitData";
-
-import { FieldLogic, type Position } from "../field/FieldLogic";
 
 export type RangeCell = {
   position: Position;
@@ -19,7 +17,7 @@ export const calculateRange = ({
   position,
   forceMove,
 }: {
-  field: FieldDatum;
+  field: FieldData;
   noEntries?: Position[];
   unit: UnitDatum;
   position: Position;
@@ -30,9 +28,8 @@ export const calculateRange = ({
     throw new Error("invalid unit data");
   }
   const move = forceMove ?? unit.move;
-  const fieldLogic = new FieldLogic({ data: field });
 
-  const calculatingMap: CalculatingCell[][] = fieldLogic.terrainRows.map(
+  const calculatingMap: CalculatingCell[][] = field.getTerrainRows.map(
     (row, y) => {
       return row.map((_, x) => {
         return {
@@ -45,7 +42,7 @@ export const calculateRange = ({
     }
   );
 
-  const result: RangeCell[][] = fieldLogic.terrainRows.map((row, y) =>
+  const result: RangeCell[][] = field.getTerrainRows.map((row, y) =>
     row.map((_, x) => ({
       position: { x, y },
       movable: false,
@@ -89,7 +86,7 @@ export const calculateRange = ({
       for (let angle = 0; angle < 360; angle += angleUnit) {
         const rangeY = y + ((range * Math.sin(angle * (Math.PI / 180))) | 0);
         const rangeX = x + ((range * Math.cos(angle * (Math.PI / 180))) | 0);
-        if (fieldLogic.isActiveCell({ x: rangeX, y: rangeY })) {
+        if (field.isActiveCell({ x: rangeX, y: rangeY })) {
           result[rangeY][rangeX].actable = true;
         }
       }
@@ -107,7 +104,7 @@ export const calculateRange = ({
       };
       const cell = calculatingMap[forwardPos.y][forwardPos.x];
       if (
-        !fieldLogic.isActiveCell(forwardPos) ||
+        !field.isActiveCell(forwardPos) ||
         cell.isConfirmed ||
         noEntries.some(
           (pos) => pos.x === forwardPos.x && pos.y === forwardPos.y
@@ -115,7 +112,7 @@ export const calculateRange = ({
       ) {
         return;
       }
-      const forwardTerrain = fieldLogic.terrain(forwardPos);
+      const forwardTerrain = field.getTerrain(forwardPos);
       const newStep = minimumStepCell.minimumStep + forwardTerrain[klass.move];
       if (cell.minimumStep > newStep) {
         calculatingMap[forwardPos.y][forwardPos.x] = {

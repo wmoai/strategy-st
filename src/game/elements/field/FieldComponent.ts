@@ -8,10 +8,8 @@ import {
   Texture,
 } from "pixi.js";
 
-import type { FieldDatum } from "@/data/fieldData";
+import type { FieldData, Position } from "@/data/fieldData";
 import { type TerrainId } from "@/data/terrainData";
-
-import { FieldLogic, type Position } from "./FieldLogic";
 
 const terrainTextureParts = [
   "topLeft",
@@ -28,14 +26,23 @@ type TerrainConnection =
   | "xy" // xy軸両方につながっている
   | "xyd"; // xy軸と斜め方向につながっている
 type ConnectedTerrainTexture = Record<TerrainConnection, TerrainTexture>;
+type TerrainNeighborConnection = {
+  topLeft: boolean;
+  top: boolean;
+  topRight: boolean;
+  left: boolean;
+  right: boolean;
+  bottomLeft: boolean;
+  bottom: boolean;
+  bottomRight: boolean;
+};
 
 export class FieldComponent {
   static terrainTextures: Record<TerrainId, ConnectedTerrainTexture> | null =
     null;
-  private readonly data: FieldDatum;
+  private readonly data: FieldData;
   private readonly cellSize: number;
   readonly container = new Container({ eventMode: "static" });
-  private readonly logic: FieldLogic;
 
   static async preload() {
     const spriteImage = await Assets.load("/strategy/terrain.png");
@@ -83,10 +90,9 @@ export class FieldComponent {
     FieldComponent.terrainTextures = result;
   }
 
-  constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
+  constructor({ data, cellSize }: { data: FieldData; cellSize: number }) {
     this.data = data;
     this.cellSize = cellSize;
-    this.logic = new FieldLogic({ data });
   }
 
   setSprites() {
@@ -97,7 +103,7 @@ export class FieldComponent {
     const { width } = this.data;
     const { cellSize } = this;
 
-    this.logic.terrainRows.forEach((row, y) => {
+    this.data.getTerrainRows.forEach((row, y) => {
       row.forEach((cellTerrain, x) => {
         const textureSet = terrainTextures[cellTerrain.id];
         terrainTextureParts.forEach((part) => {
@@ -152,7 +158,7 @@ export class FieldComponent {
     part: TerrainTexturePart;
     position: Position;
   }) {
-    const neighborConnection = this.logic.terrainNeighborConnection({
+    const neighborConnection = this.getTerrainNeighborConnection({
       x,
       y,
     });
@@ -186,6 +192,61 @@ export class FieldComponent {
     sprite.width = cellSize / 2;
     sprite.height = cellSize / 2;
     return sprite;
+  }
+
+  private getTerrainNeighborConnection(
+    pos: Position
+  ): TerrainNeighborConnection {
+    const buff: Record<number, Record<number, boolean>> = {
+      [-1]: {},
+      0: {},
+      1: {},
+    };
+    for (let dy = -1; dy < 2; dy++) {
+      for (let dx = -1; dx < 2; dx++) {
+        if (dy === 0 && dx === 0) {
+          continue;
+        }
+        const deltaPos = { x: pos.x + dx, y: pos.y + dy };
+        buff[dy][dx] =
+          !this.data.existsCell(deltaPos) ||
+          this.isTerrainConnected({ from: pos, to: deltaPos });
+      }
+    }
+    return {
+      topLeft: buff[-1][-1],
+      top: buff[-1][0],
+      topRight: buff[-1][1],
+      left: buff[0][-1],
+      right: buff[0][1],
+      bottomLeft: buff[1][-1],
+      bottom: buff[1][0],
+      bottomRight: buff[1][1],
+    };
+  }
+
+  private isTerrainConnected({ from, to }: { from: Position; to: Position }) {
+    const fromTerrainId = this.data.getTerrainId(from);
+    const toTerrainId = this.data.getTerrainId(to);
+
+    const waterGroupIds = [6, 7] as TerrainId[];
+    const bridgeGroupIds = [9, 10] as TerrainId[];
+    if (waterGroupIds.includes(fromTerrainId)) {
+      if (
+        waterGroupIds.includes(toTerrainId) ||
+        bridgeGroupIds.includes(toTerrainId)
+      ) {
+        return true;
+      }
+    }
+    const mountainGroupIds = [4, 5] as TerrainId[];
+    if (
+      mountainGroupIds.includes(fromTerrainId) &&
+      mountainGroupIds.includes(toTerrainId)
+    ) {
+      return true;
+    }
+    return fromTerrainId === toTerrainId;
   }
 
   onHover(callback: ({ position }: { position: Position }) => void) {

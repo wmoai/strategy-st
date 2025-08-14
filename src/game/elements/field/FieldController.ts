@@ -1,23 +1,20 @@
-import { fieldData, type FieldDatum } from "@/data/fieldData";
+import { FieldData } from "@/data/fieldData";
 
 import { FieldComponent } from "./FieldComponent";
-import { FieldLogic } from "./FieldLogic";
 
 export class FieldController {
-  readonly data: FieldDatum;
+  readonly data: FieldData;
   readonly component: FieldComponent;
-  readonly logic: FieldLogic;
 
-  constructor({ data, cellSize }: { data: FieldDatum; cellSize: number }) {
+  constructor({ data, cellSize }: { data: FieldData; cellSize: number }) {
     this.data = data;
     this.component = new FieldComponent({ data, cellSize });
-    this.logic = new FieldLogic({ data });
     this.component.setSprites();
   }
 
   static random({ cellSize }: { cellSize: number }) {
-    const fieldDatum = fieldData[Math.floor(Math.random() * fieldData.length)];
-    return new FieldController({ data: fieldDatum, cellSize });
+    const fieldData = FieldData.random();
+    return new FieldController({ data: fieldData, cellSize });
   }
 
   get container() {
@@ -26,7 +23,7 @@ export class FieldController {
 
   initialUnitPositions(isOffense: boolean) {
     return isOffense
-      ? this.logic.offenseInitialPositions
-      : this.logic.defenseInitialPositions;
+      ? this.data.getOffenseInitialPositions
+      : this.data.getDefenseInitialPositions;
   }
 }
