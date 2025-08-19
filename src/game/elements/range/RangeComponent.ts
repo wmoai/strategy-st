@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 
-import type { RangeCell } from "./RangeLogic";
+import type { RangeCell } from "./RangeController";
 
 export class RangeComponent {
   private readonly cellSize: number;

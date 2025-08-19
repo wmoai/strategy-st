@@ -93,36 +93,39 @@ export const calculateShortestPath = ({
       }
     }
 
-    [
-      { dy: -1, dx: 0 },
-      { dy: 0, dx: 1 },
-      { dy: 1, dx: 0 },
-      { dy: 0, dx: -1 },
-    ].forEach(({ dx, dy }) => {
-      const forwardPos = {
-        x: x + dx,
-        y: y + dy,
-      };
-      const cell = calculatingMap[forwardPos.y][forwardPos.x];
-      if (
-        !field.isActiveCell(forwardPos) ||
-        cell.isConfirmed ||
-        noEntries.some(
-          (pos) => pos.x === forwardPos.x && pos.y === forwardPos.y
-        )
-      ) {
-        return;
-      }
-      const forwardTerrain = field.getTerrain(forwardPos);
-      const newStep = minimumStepCell.minimumStep + forwardTerrain[klass.move];
-      if (cell.minimumStep > newStep) {
-        calculatingMap[forwardPos.y][forwardPos.x] = {
-          ...cell,
-          minimumStep: newStep,
-          prevPosition: { y, x },
+    if (field.isActiveCell({ x, y })) {
+      [
+        { dy: -1, dx: 0 },
+        { dy: 0, dx: 1 },
+        { dy: 1, dx: 0 },
+        { dy: 0, dx: -1 },
+      ].forEach(({ dx, dy }) => {
+        const forwardPos = {
+          x: x + dx,
+          y: y + dy,
         };
-      }
-    });
+        const cell = calculatingMap[forwardPos.y][forwardPos.x];
+        if (
+          !field.isActiveCell(forwardPos) ||
+          cell.isConfirmed ||
+          noEntries.some(
+            (pos) => pos.x === forwardPos.x && pos.y === forwardPos.y
+          )
+        ) {
+          return;
+        }
+        const forwardTerrain = field.getTerrain(forwardPos);
+        const newStep =
+          minimumStepCell.minimumStep + forwardTerrain[klass.move];
+        if (cell.minimumStep > newStep) {
+          calculatingMap[forwardPos.y][forwardPos.x] = {
+            ...cell,
+            minimumStep: newStep,
+            prevPosition: { y, x },
+          };
+        }
+      });
+    }
     dijkstraAlgoLoop();
   };
   dijkstraAlgoLoop();

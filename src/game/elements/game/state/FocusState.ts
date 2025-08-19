@@ -91,7 +91,6 @@ export class FocusState extends GameState {
     this.env.changeState(
       new MapState({
         env: this.env,
-        hoveredUnit: this.hoveredUnit,
       })
     );
   }

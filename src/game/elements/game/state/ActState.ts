@@ -38,6 +38,7 @@ export class ActState extends GameState {
 
   override moveCursor({ position }: { position: Position }) {
     super.moveCursor({ position });
+    // 戦闘予想セット
   }
 
   override selectCell() {

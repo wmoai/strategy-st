@@ -19,7 +19,9 @@ export class MapState extends GameState {
     this.hoveredUnit = hoveredUnit;
   }
 
-  start() {}
+  start() {
+    this.moveCursor({ position: this.env.controllers.cursor.position });
+  }
 
   end() {}
 
