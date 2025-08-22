@@ -3,7 +3,7 @@ import { findKlass, type KlassData } from "@/data/klassData";
 import type { TerrainData } from "@/data/terrainData";
 import { findUnitData, type UnitData, type UnitId } from "@/data/unitData";
 import { cellSize } from "@/game/constants";
-import type { Animation } from "@/game/elements/animation/Animation";
+import type { Animation } from "@/game/types";
 
 import { UnitComponent } from "./UnitComponent";
 

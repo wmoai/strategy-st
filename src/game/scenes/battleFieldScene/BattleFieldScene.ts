@@ -2,11 +2,11 @@ import { Container, RenderLayer } from "pixi.js";
 
 import type { Position } from "@/data/fieldData";
 import type { UnitData } from "@/data/unitData";
-import type { Animation } from "@/game/elements/animation/Animation";
 import { CursorEntity } from "@/game/entities/cursor/CursorEntity";
 import { FieldEntity } from "@/game/entities/field/FieldEntity";
 import { UnitEntity } from "@/game/entities/unit/UnitEntity";
 import type { Game } from "@/game/main/Game";
+import type { Animation } from "@/game/types";
 
 import type { BattleFieldSceneState } from "./state/BattleFieldSceneState";
 import { FieldState } from "./state/FieldState";

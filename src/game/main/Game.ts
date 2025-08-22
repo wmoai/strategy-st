@@ -3,7 +3,6 @@ import { Application } from "pixi.js";
 import type { TerrainData } from "@/data/terrainData";
 import type { UnitData } from "@/data/unitData";
 
-import { UnitComponent } from "../elements/unit/UnitComponent";
 import type { UnitEntity } from "../entities/unit/UnitEntity";
 import { BattleFieldScene } from "../scenes/battleFieldScene/BattleFieldScene";
 import type { ActionPrediction } from "../scenes/battleFieldScene/types";
@@ -44,9 +43,6 @@ export class Game {
   }
 
   static async create(args: Constructor) {
-    // FIXME: delete ========
-    await UnitComponent.preload();
-    // ======================
     await AssetLoader.loadInitialAssets();
     return new Game(args);
   }
