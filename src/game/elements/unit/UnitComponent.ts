@@ -41,7 +41,7 @@ export class UnitComponent {
   private readonly hpBarWidth: number;
 
   static async preload() {
-    const spriteImage = await Assets.load("/strategy/units.png");
+    const spriteImage = await Assets.load<Texture>("/strategy/units.png");
     const spriteTileSize = 50;
 
     const result: Record<KlassId, UnitTexture> = {};
@@ -51,7 +51,7 @@ export class UnitComponent {
       const buff: Texture[] = [];
       for (let h = 0; h < 3; h++) {
         const texture = new Texture({
-          source: spriteImage,
+          source: spriteImage.source,
           frame: new Rectangle(
             spriteTileSize * w,
             spriteTileSize * h,

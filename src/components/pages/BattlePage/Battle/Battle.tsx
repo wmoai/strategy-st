@@ -7,7 +7,7 @@ import {
   focusedUnitAtom,
   sortieAtom,
 } from "@/features/battle/battleAtom";
-import { Game } from "@/game/elements/game/Game";
+import { Game } from "@/game/main/Game";
 
 import { ActionPredictionPanel } from "./ActionPredictionPanel";
 import { UnitInfoPanel } from "./UnitInfoPanel";
@@ -38,7 +38,7 @@ export const Battle: FC = () => {
       if (!canvasRef.current || !canvasWrapperRef.current) {
         return;
       }
-      game.run({
+      game.start({
         canvas: canvasRef.current,
         canvasWrapper: canvasWrapperRef.current,
       });

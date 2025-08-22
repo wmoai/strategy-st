@@ -37,7 +37,7 @@ export class FieldComponent {
   readonly container = new Container({ eventMode: "static" });
 
   static async preload() {
-    const spriteImage = await Assets.load("/strategy/terrain.png");
+    const spriteImage = await Assets.load<Texture>("/strategy/terrain.png");
     const spriteTileSize = 40;
 
     const result: Record<TerrainId, ConnectedTerrainTexture> = {};
@@ -53,7 +53,7 @@ export class FieldComponent {
         for (let v = 0; v < 2; v++) {
           for (let h = 0; h < 2; h++) {
             const texture = new Texture({
-              source: spriteImage,
+              source: spriteImage.source,
               frame: new Rectangle(
                 spriteTileSize * xIndex + (spriteTileSize / 2) * h,
                 spriteTileSize * yIndex + (spriteTileSize / 2) * v,
