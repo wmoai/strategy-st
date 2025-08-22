@@ -1,30 +1,30 @@
 import { Container, RenderLayer } from "pixi.js";
 
+import type { Position } from "@/data/fieldData";
 import type { UnitData } from "@/data/unitData";
+import { cellSize } from "@/game/constants";
 import type { Animation } from "@/game/elements/animation/Animation";
 import { CursorController } from "@/game/elements/cursor/CursorController";
-import { FieldController } from "@/game/elements/field/FieldController";
 import { RangeController } from "@/game/elements/range/RangeController";
 import { UnitController } from "@/game/elements/unit/UnitController";
+import { FieldEntity } from "@/game/entities/field/FieldEntity";
 import type { Game } from "@/game/main/Game";
 
 import type { BattleFieldSceneState } from "./state/BattleFieldSceneState";
 import { FieldState } from "./state/FieldState";
-import type { ActionPrediction, Position } from "./types";
-
-const cellSize = 40;
+import type { ActionPrediction } from "./types";
 
 export class BattleFieldScene {
   game: Game;
   isPlayerOffense: boolean;
   controllers: {
-    field: FieldController;
     range: RangeController;
     playerUnits: UnitController[];
     enemyUnits: UnitController[];
     cursor: CursorController;
   };
   container = new Container();
+  field: FieldEntity;
   layer = {
     activeUnit: new RenderLayer(),
   };
@@ -51,11 +51,11 @@ export class BattleFieldScene {
     this.game = game;
     this.isPlayerOffense = isPlayerOffense;
 
-    const fieldController = FieldController.random({ cellSize });
+    this.field = FieldEntity.randomField();
     const rangeController = new RangeController({ cellSize });
 
     const playerInitPositions =
-      fieldController.initialUnitPositions(isPlayerOffense);
+      this.field.initialUnitPositions(isPlayerOffense);
     const playerUnitControllers = sortieUnits.player.map((unitData, index) => {
       const position = playerInitPositions[index];
       return new UnitController({
@@ -66,7 +66,7 @@ export class BattleFieldScene {
       });
     });
 
-    const enemyInitPositions = fieldController.initialUnitPositions(
+    const enemyInitPositions = this.field.initialUnitPositions(
       !isPlayerOffense
     );
     const enemyUnitControllers = sortieUnits.enemy.map((unitData, index) => {
@@ -82,12 +82,20 @@ export class BattleFieldScene {
     const cursorController = new CursorController({ cellSize });
 
     this.controllers = {
-      field: fieldController,
       range: rangeController,
       playerUnits: playerUnitControllers,
       enemyUnits: enemyUnitControllers,
       cursor: cursorController,
     };
+
+    this.container.addChild(
+      this.field.container,
+      this.controllers.range.container,
+      ...this.controllers.playerUnits.map((unit) => unit.container),
+      ...this.controllers.enemyUnits.map((unit) => unit.container),
+      this.controllers.cursor.graphic,
+      this.layer.activeUnit
+    );
 
     const mapState = new FieldState({ env: { game: this.game, scene: this } });
     mapState.moveCursor({
@@ -95,15 +103,20 @@ export class BattleFieldScene {
     });
     this.changeState(mapState);
 
-    this.controllers.field.onHover(({ position }) =>
-      this.state?.moveCursor({ position })
-    );
-    this.controllers.field.onClick(() => {
+    this.field.onHover(({ position }) => this.state?.moveCursor({ position }));
+    this.field.onClick(() => {
       this.state?.selectCell();
     });
   }
 
-  animate(deltaTime: number) {
+  animate({ deltaTime, frame }: { deltaTime: number; frame: number }) {
+    this.controllers.cursor.animate(frame);
+    this.controllers.range.animate(frame);
+
+    this.animateByQue(deltaTime);
+  }
+
+  private animateByQue(deltaTime: number) {
     if (this.animationQue.length === 0) {
       return;
     }
@@ -136,7 +149,7 @@ export class BattleFieldScene {
 
   showUnitRange({ unit }: { unit: UnitController }) {
     this.controllers.range.createMoveRange({
-      field: this.controllers.field.data,
+      field: this.field.data,
       unit,
       opponentUnits:
         this.isPlayerOffense === unit.isOffense
@@ -202,8 +215,8 @@ export class BattleFieldScene {
         },
       };
     }
-    const fromTerrain = this.controllers.field.data.getTerrain(from.position);
-    const toTerrain = this.controllers.field.data.getTerrain(to.position);
+    const fromTerrain = this.field.data.getTerrain(from.position);
+    const toTerrain = this.field.data.getTerrain(to.position);
 
     return {
       from: {

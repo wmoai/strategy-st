@@ -1,11 +1,23 @@
 import { Application } from "pixi.js";
 
+import type { TerrainData } from "@/data/terrainData";
 import type { UnitData } from "@/data/unitData";
 
 import { FieldComponent } from "../elements/field/FieldComponent";
-import { GameEnv, type Handlers } from "../elements/game/GameEnv";
+import type { ActionPrediction } from "../elements/game/GameEnv";
+import { BattleFieldScene } from "../elements/game/scenes/battleFieldScene/BattleFieldScene";
 import { UnitComponent } from "../elements/unit/UnitComponent";
+import type { UnitController } from "../elements/unit/UnitController";
 import { AssetLoader } from "../utils/AssetLoader";
+
+type Handlers = {
+  onFocusUnit: (unitController: UnitController) => void;
+  onFocusTerrain: (terrain: TerrainData) => void;
+  onPredictAct: (args?: {
+    from: ActionPrediction;
+    to: ActionPrediction;
+  }) => void;
+};
 
 type Constructor = {
   isPlayerOffense: boolean;
@@ -18,24 +30,31 @@ type Constructor = {
 
 export class Game {
   private readonly app = new Application();
-  private readonly env: GameEnv;
+  // private readonly env: GameEnv;
   readonly handlers: Handlers;
+  scene: BattleFieldScene;
 
   private constructor({ isPlayerOffense, sortieUnits, handlers }: Constructor) {
     this.handlers = handlers;
-    this.env = new GameEnv({
+    // this.env = new GameEnv({
+    //   isPlayerOffense,
+    //   sortieUnits,
+    //   handlers,
+    // });
+    // this.app.stage.addChild(
+    //   this.env.controllers.field.container,
+    //   this.env.controllers.range.container,
+    //   ...this.env.controllers.playerUnits.map((unit) => unit.container),
+    //   ...this.env.controllers.enemyUnits.map((unit) => unit.container),
+    //   this.env.controllers.cursor.graphic,
+    //   this.env.layer.activeUnit
+    // );
+    this.scene = new BattleFieldScene({
+      game: this,
       isPlayerOffense,
       sortieUnits,
-      handlers,
     });
-    this.app.stage.addChild(
-      this.env.controllers.field.container,
-      this.env.controllers.range.container,
-      ...this.env.controllers.playerUnits.map((unit) => unit.container),
-      ...this.env.controllers.enemyUnits.map((unit) => unit.container),
-      this.env.controllers.cursor.graphic,
-      this.env.layer.activeUnit
-    );
+    this.app.stage.addChild(this.scene.container);
     this.app.stage.pivot.x = this.app.stage.width / 2;
   }
 
@@ -71,10 +90,7 @@ export class Game {
       if (frame > 60) {
         frame -= 60;
       }
-      this.env.controllers.cursor.animate(frame);
-      this.env.controllers.range.animate(frame);
-
-      this.env.animate(time.deltaTime);
+      this.scene.animate({ deltaTime: time.deltaTime, frame });
     });
   }
 }

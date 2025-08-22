@@ -26,7 +26,7 @@ export class ActState extends BattleFieldSceneState {
 
   start() {
     this.env.scene.controllers.range.createActRange({
-      field: this.env.scene.controllers.field.data,
+      field: this.env.scene.field.data,
       unit: this.unit,
       position: this.position,
     });

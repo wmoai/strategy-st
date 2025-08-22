@@ -1,7 +1,8 @@
+import type { Position } from "@/data/fieldData";
 import type { UnitController } from "@/game/elements/unit/UnitController";
 
 import { BattleFieldSceneState } from "./BattleFieldSceneState";
-import type { BattleFieldSceneEnv, Position } from "../types";
+import type { BattleFieldSceneEnv } from "../types";
 import { FocusState } from "./FocusState";
 
 export class FieldState extends BattleFieldSceneState {

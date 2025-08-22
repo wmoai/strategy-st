@@ -3,11 +3,6 @@ import type { Game } from "@/game/main/Game";
 
 import type { BattleFieldScene } from "./BattleFieldScene";
 
-export type Position = {
-  x: number;
-  y: number;
-};
-
 export type BattleFieldSceneEnv = {
   game: Game;
   scene: BattleFieldScene;
