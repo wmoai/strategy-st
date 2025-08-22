@@ -1,4 +1,11 @@
-import { Container, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
+import {
+  BlurFilter,
+  Container,
+  Graphics,
+  Rectangle,
+  Sprite,
+  Texture,
+} from "pixi.js";
 
 import type { FieldData, Position } from "@/data/fieldData";
 import type { TerrainId } from "@/data/terrainData";
@@ -103,20 +110,27 @@ export class TerrainSpriteSheet {
             })
           );
         });
-        const isEdge =
-          x === 0 ||
-          y === 0 ||
-          x === fieldData.width - 1 ||
-          y === fieldData.height - 1;
-        if (isEdge) {
-          container.addChild(
-            new Graphics()
-              .rect(x * cellSize, y * cellSize, cellSize, cellSize)
-              .fill({ color: 0, alpha: 0.2 })
-          );
-        }
       });
     });
+
+    const shadowMargin = cellSize / 4;
+    const edgeShadow = new Graphics()
+      .rect(
+        -cellSize,
+        -cellSize,
+        width * cellSize + cellSize * 2,
+        fieldData.height * cellSize + cellSize * 2
+      )
+      .fill({ color: 0, alpha: 0.3 })
+      .rect(
+        cellSize - shadowMargin,
+        cellSize - shadowMargin,
+        (width - 2) * cellSize + shadowMargin * 2,
+        (fieldData.height - 2) * cellSize + shadowMargin * 2
+      )
+      .cut();
+    edgeShadow.filters = [new BlurFilter()];
+    container.addChild(edgeShadow);
 
     const containerMask = new Graphics()
       .rect(0, 0, width * cellSize, fieldData.height * cellSize)
@@ -124,7 +138,6 @@ export class TerrainSpriteSheet {
     container.mask = containerMask;
     container.addChild(containerMask);
 
-    container.cacheAsTexture(true);
     return container;
   }
 

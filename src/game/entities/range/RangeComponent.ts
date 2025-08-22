@@ -32,6 +32,5 @@ export class RangeComponent {
         }
       })
     );
-    this.container.cacheAsTexture(true);
   }
 }
