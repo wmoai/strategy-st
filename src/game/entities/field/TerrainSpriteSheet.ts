@@ -1,11 +1,4 @@
-import {
-  BlurFilter,
-  Container,
-  Graphics,
-  Rectangle,
-  Sprite,
-  Texture,
-} from "pixi.js";
+import { Container, Graphics, Rectangle, Sprite, Texture } from "pixi.js";
 
 import type { FieldData, Position } from "@/data/fieldData";
 import type { TerrainId } from "@/data/terrainData";
@@ -85,11 +78,13 @@ export class TerrainSpriteSheet {
     }
     this.connectedTextureRecord = result;
   }
-
   static createFieldContainer(fieldData: FieldData) {
-    const instance = TerrainSpriteSheet.getInstance();
+    return TerrainSpriteSheet.getInstance().createFieldContainer(fieldData);
+  }
+
+  createFieldContainer(fieldData: FieldData) {
     const container = new Container();
-    const { connectedTextureRecord } = instance;
+    const { connectedTextureRecord } = this;
     if (connectedTextureRecord === null) {
       throw new Error("terrain textures not preloaded");
     }
@@ -100,7 +95,7 @@ export class TerrainSpriteSheet {
         const textureSet = connectedTextureRecord[cellTerrain.id];
         terrainTextureParts.forEach((part) => {
           container.addChild(
-            instance.createSprite({
+            this.createSprite({
               fieldData,
               textureSet,
               part,
@@ -108,27 +103,20 @@ export class TerrainSpriteSheet {
             })
           );
         });
+        const isEdge =
+          x === 0 ||
+          y === 0 ||
+          x === fieldData.width - 1 ||
+          y === fieldData.height - 1;
+        if (isEdge) {
+          container.addChild(
+            new Graphics()
+              .rect(x * cellSize, y * cellSize, cellSize, cellSize)
+              .fill({ color: 0, alpha: 0.2 })
+          );
+        }
       });
     });
-
-    const shadowMargin = cellSize / 4;
-    const edgeShadow = new Graphics()
-      .rect(
-        -cellSize,
-        -cellSize,
-        width * cellSize + cellSize * 2,
-        fieldData.height * cellSize + cellSize * 2
-      )
-      .fill({ color: 0, alpha: 0.3 })
-      .rect(
-        cellSize - shadowMargin,
-        cellSize - shadowMargin,
-        (width - 2) * cellSize + shadowMargin * 2,
-        (fieldData.height - 2) * cellSize + shadowMargin * 2
-      )
-      .cut();
-    edgeShadow.filters = [new BlurFilter()];
-    container.addChild(edgeShadow);
 
     const containerMask = new Graphics()
       .rect(0, 0, width * cellSize, fieldData.height * cellSize)

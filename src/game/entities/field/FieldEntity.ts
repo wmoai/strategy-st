@@ -2,7 +2,7 @@ import { Container } from "pixi.js";
 
 import { FieldData, type Position } from "@/data/fieldData";
 
-import { TerrainSpriteSheet } from "./terrainSpriteSheet";
+import { TerrainSpriteSheet } from "./TerrainSpriteSheet";
 import { cellSize } from "../../constants";
 
 export class FieldEntity {
