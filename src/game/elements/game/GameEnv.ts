@@ -14,6 +14,22 @@ import type { Animation } from "../animation/Animation";
 
 const cellSize = 40;
 
+export type Handlers = {
+  onFocusUnit: (unitController: UnitController) => void;
+  onFocusTerrain: (terrain: TerrainData) => void;
+  onPredictAct: (args?: {
+    from: ActionPrediction;
+    to: ActionPrediction;
+  }) => void;
+};
+
+export type ActionPrediction = {
+  unit: UnitController;
+  effect: number | null;
+  hit: number | null;
+  crit: number | null;
+};
+
 export class GameEnv {
   isPlayerOffense: boolean;
   controllers: {
@@ -23,10 +39,7 @@ export class GameEnv {
     enemyUnits: UnitController[];
     cursor: CursorController;
   };
-  handlers: {
-    onFocusUnit: (unitController: UnitController) => void;
-    onFocusTerrain: (terrain: TerrainData) => void;
-  };
+  handlers: Handlers;
   animationQue: Array<{
     animations: Animation[];
     onEnd?: () => void;
@@ -35,6 +48,7 @@ export class GameEnv {
     activeUnit: new RenderLayer(),
   };
   private state?: GameState;
+  turn: "offense" | "defense" = "defense";
 
   constructor({
     isPlayerOffense,
@@ -46,10 +60,7 @@ export class GameEnv {
       player: UnitData[];
       enemy: UnitData[];
     };
-    handlers: {
-      onFocusUnit: (unitController: UnitController) => void;
-      onFocusTerrain: (terrain: TerrainData) => void;
-    };
+    handlers: Handlers;
   }) {
     this.isPlayerOffense = isPlayerOffense;
     this.handlers = handlers;
@@ -152,5 +163,83 @@ export class GameEnv {
     this.state?.end();
     this.state = nextState;
     this.state.start();
+  }
+
+  get isMyTurn() {
+    return (
+      (this.isPlayerOffense && this.turn === "offense") ||
+      (!this.isPlayerOffense && this.turn === "defense")
+    );
+  }
+
+  get turnUnits() {
+    if (this.isPlayerOffense) {
+      return this.turn === "offense"
+        ? this.controllers.playerUnits
+        : this.controllers.enemyUnits;
+    } else {
+      return this.turn === "defense"
+        ? this.controllers.playerUnits
+        : this.controllers.enemyUnits;
+    }
+  }
+
+  updateTurn() {
+    if (this.turnUnits.every((unit) => unit.isActed)) {
+      this.turn = this.turn === "offense" ? "defense" : "offense";
+    }
+  }
+
+  private getActionPrediction({
+    from,
+    to,
+  }: {
+    from: UnitController;
+    to: UnitController;
+  }): {
+    from: ActionPrediction;
+    to: ActionPrediction;
+  } {
+    if (from.isHealer) {
+      return {
+        from: {
+          unit: from,
+          effect: from.data.str,
+          hit: 100,
+          crit: null,
+        },
+        to: {
+          unit: to,
+          effect: null,
+          hit: null,
+          crit: null,
+        },
+      };
+    }
+    const fromTerrain = this.controllers.field.data.getTerrain(from.position);
+    const toTerrain = this.controllers.field.data.getTerrain(to.position);
+
+    return {
+      from: {
+        unit: from,
+        effect: -from.getActionEffectValueTo(to.data),
+        hit: from.getHitRate({ target: to.data, terrain: toTerrain }),
+        crit: from.getCritRate(),
+      },
+      to: {
+        unit: to,
+        effect: -to.getActionEffectValueTo(from.data),
+        hit: to.getHitRate({ target: from.data, terrain: fromTerrain }),
+        crit: to.getCritRate(),
+      },
+    };
+  }
+
+  predictAct({ from, to }: { from: UnitController; to: UnitController }) {
+    this.handlers.onPredictAct(this.getActionPrediction({ from, to }));
+  }
+
+  clearActionPrediction() {
+    this.handlers.onPredictAct();
   }
 }

@@ -1,12 +1,10 @@
 import { Application } from "pixi.js";
 
-import type { TerrainData } from "@/data/terrainData";
 import type { UnitData } from "@/data/unitData";
 
-import { GameEnv } from "./GameEnv";
+import { GameEnv, type Handlers } from "./GameEnv";
 import { FieldComponent } from "../field/FieldComponent";
 import { UnitComponent } from "../unit/UnitComponent";
-import { UnitController } from "../unit/UnitController";
 
 type Constructor = {
   isPlayerOffense: boolean;
@@ -14,27 +12,18 @@ type Constructor = {
     player: UnitData[];
     enemy: UnitData[];
   };
-  onFocusUnit: (unitController: UnitController) => void;
-  onFocusTerrain: (terrain: TerrainData) => void;
+  handlers: Handlers;
 };
 
 export class Game {
   app = new Application();
   env: GameEnv;
 
-  private constructor({
-    isPlayerOffense,
-    sortieUnits,
-    onFocusUnit,
-    onFocusTerrain,
-  }: Constructor) {
+  private constructor({ isPlayerOffense, sortieUnits, handlers }: Constructor) {
     this.env = new GameEnv({
       isPlayerOffense,
       sortieUnits,
-      handlers: {
-        onFocusUnit,
-        onFocusTerrain,
-      },
+      handlers,
     });
   }
 
@@ -69,10 +58,10 @@ export class Game {
     this.app.stage.x = this.app.screen.width / 2;
     this.app.stage.pivot.x = this.app.stage.width / 2;
 
-    this.setTicker();
+    this.setAnimationTicker();
   }
 
-  private setTicker() {
+  private setAnimationTicker() {
     let frame = 0;
     this.app.ticker.add((time) => {
       frame += time.deltaTime;

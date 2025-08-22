@@ -55,9 +55,9 @@ export const calculateShortestPath = ({
 
   // ダイクストラ法
   const dijkstraAlgoLoop = () => {
-    const minimumStepCell = calculatingMap.reduce((result, row) => {
-      row.forEach((cell) => {
-        if (cell.isConfirmed) {
+    const minimumStepCell = calculatingMap.reduce((result, row, y) => {
+      row.forEach((cell, x) => {
+        if (cell.isConfirmed || !field.isActiveCell({ x, y })) {
           return;
         }
         if (!result || result.minimumStep > cell.minimumStep) {

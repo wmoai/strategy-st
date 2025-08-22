@@ -34,11 +34,24 @@ export class ActState extends GameState {
 
   end() {
     this.env.controllers.range.removeRange();
+    this.env.handlers.onPredictAct();
   }
 
   override moveCursor({ position }: { position: Position }) {
     super.moveCursor({ position });
-    // 戦闘予想セット
+    const hoveredUnit = this.env.findUnitFromPosition(position);
+    if (hoveredUnit) {
+      const actable = this.unit.isHealer
+        ? this.unit.isOffense === hoveredUnit.isOffense
+        : this.unit.isOffense !== hoveredUnit.isOffense;
+      if (actable && this.env.controllers.range.isActable(position)) {
+        this.target = hoveredUnit;
+        this.env.predictAct({ from: this.unit, to: hoveredUnit });
+      } else {
+        this.env.handlers.onFocusUnit(hoveredUnit);
+        this.env.clearActionPrediction();
+      }
+    }
   }
 
   override selectCell() {
@@ -47,13 +60,15 @@ export class ActState extends GameState {
     }
     const position = this.env.controllers.cursor.position;
     if (this.env.controllers.range.isActable(position) && this.target) {
-      // 行動確定
+      this.act(this.target);
     } else if (this.env.controllers.range.isMovable(position)) {
       this.standBy();
     } else {
       this.cancelMove();
     }
   }
+
+  private act(target: UnitController) {}
 
   private standBy() {
     this.env.controllers.range.removeRange();
@@ -71,6 +86,7 @@ export class ActState extends GameState {
     this.env.changeState(
       new MapState({
         env: this.env,
+        hoveredUnit: this.unit,
       })
     );
   }

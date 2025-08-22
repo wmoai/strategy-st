@@ -1,5 +1,6 @@
 import type { Position } from "@/data/fieldData";
-import { findKlass } from "@/data/klassData";
+import { findKlass, type KlassData } from "@/data/klassData";
+import type { TerrainData } from "@/data/terrainData";
 import { findUnitData, type UnitData, type UnitId } from "@/data/unitData";
 
 import { UnitComponent } from "./UnitComponent";
@@ -12,6 +13,7 @@ export type UnitState = {
 
 export class UnitController {
   readonly data: UnitData;
+  readonly klass: KlassData;
   readonly isOffense: boolean;
   component: UnitComponent;
   private state: UnitState;
@@ -32,6 +34,11 @@ export class UnitController {
       throw new Error("invalid unitId");
     }
     this.data = data;
+    const klass = findKlass(this.data.klass);
+    if (!klass) {
+      throw new Error("invalid unit klass");
+    }
+    this.klass = klass;
     this.isOffense = isOffense;
     this.state = {
       position,
@@ -51,8 +58,11 @@ export class UnitController {
   }
 
   get isHealer() {
-    const klass = findKlass(this.data.klass);
-    return klass?.healer === 1;
+    return this.klass.healer === 1;
+  }
+
+  get isMagical() {
+    return this.klass.magical === 1;
   }
 
   get position() {
@@ -75,5 +85,26 @@ export class UnitController {
     this.state.position = position;
     this.state.isActed = true;
     this.updateComponent();
+  }
+
+  getActionEffectValueTo(target: UnitData) {
+    const defense = this.isMagical ? target.fth : target.dff;
+    return Math.max(this.data.str - defense, 1);
+  }
+
+  getHitRate({ target, terrain }: { target: UnitData; terrain: TerrainData }) {
+    if (this.isHealer) {
+      return 100;
+    }
+    const rate = 100 + this.data.skl * 5 - target.skl * 5 - terrain.avoid;
+    return Math.min(Math.max(Math.floor(rate), 1), 100);
+  }
+
+  getCritRate() {
+    if (this.isHealer) {
+      return 0;
+    }
+    const rate = this.data.skl * 10;
+    return Math.min(Math.max(Math.floor(rate), 0), 100);
   }
 }

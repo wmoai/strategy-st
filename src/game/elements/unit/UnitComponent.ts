@@ -88,10 +88,12 @@ export class UnitComponent {
       redLine: new Graphics(),
       greenLine: new Graphics(),
     };
-    this.components.redLine.fill(0xdc143c);
-    this.components.redLine.rect(2, cellSize - 4, this.hpBarWidth, 2);
-    this.components.greenLine.fill(0x40e0d0);
-    this.components.greenLine.rect(2, cellSize - 4, this.hpBarWidth, 2);
+    this.components.redLine
+      .rect(2, cellSize - 4, this.hpBarWidth, 2)
+      .fill(0xdc143c);
+    this.components.greenLine
+      .rect(2, cellSize - 4, this.hpBarWidth, 2)
+      .fill(0x40e0d0);
     this.container = new Container({
       children: [
         this.components.unit,

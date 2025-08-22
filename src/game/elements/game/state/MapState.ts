@@ -20,6 +20,9 @@ export class MapState extends GameState {
   }
 
   start() {
+    if (this.hoveredUnit) {
+      this.env.handlers.onFocusUnit(this.hoveredUnit);
+    }
     this.moveCursor({ position: this.env.controllers.cursor.position });
   }
 
@@ -44,6 +47,9 @@ export class MapState extends GameState {
   }
 
   private focusUnit(unit: UnitController) {
+    if (!this.env.isMyTurn) {
+      return;
+    }
     this.env.changeState(
       new FocusState({
         env: this.env,

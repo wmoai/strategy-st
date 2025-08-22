@@ -1,14 +1,16 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef, type FC } from "react";
-import { tv } from "tailwind-variants";
 
-import { UnitImage } from "@/components/parts/UnitImage";
 import {
+  actionPredictionAtom,
   focusedTerrainAtom,
   focusedUnitAtom,
   sortieAtom,
 } from "@/features/battle/battleAtom";
 import { Game } from "@/game/elements/game/Game";
+
+import { ActionPredictionPanel } from "./ActionPredictionPanel";
+import { UnitInfoPanel } from "./UnitInfoPanel";
 
 export const Battle: FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,6 +19,7 @@ export const Battle: FC = () => {
   const sortie = useAtomValue(sortieAtom);
   const [focusedUnit, setFocusedUnit] = useAtom(focusedUnitAtom);
   const [focusedTerrain, setFocusedTerrain] = useAtom(focusedTerrainAtom);
+  const [actionPrediction, setActionPrediction] = useAtom(actionPredictionAtom);
 
   useEffect(() => {
     if (isRunning.current) {
@@ -26,8 +29,11 @@ export const Battle: FC = () => {
     Game.create({
       isPlayerOffense: sortie.isOffense,
       sortieUnits: sortie.units,
-      onFocusUnit: setFocusedUnit,
-      onFocusTerrain: setFocusedTerrain,
+      handlers: {
+        onFocusUnit: setFocusedUnit,
+        onFocusTerrain: setFocusedTerrain,
+        onPredictAct: setActionPrediction,
+      },
     }).then((game) => {
       if (!canvasRef.current || !canvasWrapperRef.current) {
         return;
@@ -37,7 +43,13 @@ export const Battle: FC = () => {
         canvasWrapper: canvasWrapperRef.current,
       });
     });
-  }, [setFocusedTerrain, setFocusedUnit, sortie.isOffense, sortie.units]);
+  }, [
+    setActionPrediction,
+    setFocusedTerrain,
+    setFocusedUnit,
+    sortie.isOffense,
+    sortie.units,
+  ]);
 
   return (
     <div className="flex flex-col h-screen bg-[#222] text-gray-100 overflow-hidden">
@@ -52,58 +64,14 @@ export const Battle: FC = () => {
             終了
           </button>
           <section className="flex-1">
-            {focusedUnit && (
-              <div className="justify-self-center flex items-center gap-5 h-full">
-                <div className="p-2 bg-gray-500 rounded-xl">
-                  <UnitImage
-                    unit={focusedUnit.data}
-                    isBlue={!focusedUnit.isOffense}
-                  />
-                </div>
-                <div>
-                  <header className="flex gap-2">
-                    <div
-                      className={unitNameTv({
-                        isOffense: focusedUnit.isOffense,
-                      })}
-                    >
-                      {focusedUnit.data.name}
-                    </div>
-                    <div>
-                      HP
-                      <span className="ms-1 text-2xl text-green-300">
-                        {focusedUnit.currentHp}
-                      </span>
-                      <span className="text-yellow-200">
-                        /{focusedUnit.data.hp}
-                      </span>
-                    </div>
-                  </header>
-                  <dl className="mt-0.5 grid grid-cols-[repeat(3,10fr_11fr)] items-center [&>dt]:me-1.5 [&>dd]:text-xl [&>dd]:text-yellow-200 [&>*]:leading-tight">
-                    <dt>力</dt>
-                    <dd>{focusedUnit.data.str}</dd>
-                    <dt>技</dt>
-                    <dd>{focusedUnit.data.skl}</dd>
-                    <dt>守備</dt>
-                    <dd>{focusedUnit.data.dff}</dd>
-                    <dt>移動</dt>
-                    <dd>{focusedUnit.data.move}</dd>
-                    <dt>信仰</dt>
-                    <dd>{focusedUnit.data.fth}</dd>
-                    <dt>射程</dt>
-                    <dd>
-                      {(() => {
-                        const { max_range, min_range } = focusedUnit.data;
-                        if (max_range === min_range) {
-                          return max_range;
-                        }
-                        return `${min_range}~${max_range}`;
-                      })()}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            )}
+            {actionPrediction ? (
+              <ActionPredictionPanel
+                from={actionPrediction.from}
+                to={actionPrediction.to}
+              />
+            ) : focusedUnit ? (
+              <UnitInfoPanel unit={focusedUnit} />
+            ) : null}
           </section>
           <section className="flex flex-col w-[8rem] bg-gray-600">
             <div className="flex-1">軍</div>
@@ -132,13 +100,3 @@ export const Battle: FC = () => {
     </div>
   );
 };
-
-const unitNameTv = tv({
-  base: "min-w-[6em] px-3 py-[1px] border border-gray-500 text-lg text-center",
-  variants: {
-    isOffense: {
-      true: "bg-red-900",
-      false: "bg-blue-900",
-    },
-  },
-});

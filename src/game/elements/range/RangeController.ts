@@ -41,6 +41,7 @@ export class RangeController {
       })),
       unit: unit.data,
       position: unit.position,
+      forceMove: Infinity,
     });
     this.component.set({
       rangeCells: this.rangeCells,
