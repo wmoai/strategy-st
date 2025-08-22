@@ -58,7 +58,7 @@ export class ActState extends BattleFieldSceneState {
     if (this.env.scene.isAnimating) {
       return;
     }
-    const position = this.env.scene.controllers.cursor.position;
+    const position = this.env.scene.cursor.position;
     if (this.env.scene.controllers.range.isActable(position) && this.target) {
       this.act(this.target);
     } else if (this.env.scene.controllers.range.isMovable(position)) {

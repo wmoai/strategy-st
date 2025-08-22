@@ -23,7 +23,7 @@ export class FieldState extends BattleFieldSceneState {
     if (this.hoveredUnit) {
       this.env.game.handlers.onFocusUnit(this.hoveredUnit);
     }
-    this.moveCursor({ position: this.env.scene.controllers.cursor.position });
+    this.moveCursor({ position: this.env.scene.cursor.position });
   }
 
   end() {}

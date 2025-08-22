@@ -42,7 +42,7 @@ export class FocusState extends BattleFieldSceneState {
     if (this.env.scene.isAnimating) {
       return;
     }
-    const position = this.env.scene.controllers.cursor.position;
+    const position = this.env.scene.cursor.position;
     const { focusedUnit, hoveredUnit } = this;
 
     if (hoveredUnit && hoveredUnit !== focusedUnit && !hoveredUnit.isActed) {

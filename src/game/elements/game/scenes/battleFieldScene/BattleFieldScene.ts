@@ -4,9 +4,9 @@ import type { Position } from "@/data/fieldData";
 import type { UnitData } from "@/data/unitData";
 import { cellSize } from "@/game/constants";
 import type { Animation } from "@/game/elements/animation/Animation";
-import { CursorController } from "@/game/elements/cursor/CursorController";
 import { RangeController } from "@/game/elements/range/RangeController";
 import { UnitController } from "@/game/elements/unit/UnitController";
+import { CursorEntity } from "@/game/entities/cursor/CursorEntity";
 import { FieldEntity } from "@/game/entities/field/FieldEntity";
 import type { Game } from "@/game/main/Game";
 
@@ -21,10 +21,10 @@ export class BattleFieldScene {
     range: RangeController;
     playerUnits: UnitController[];
     enemyUnits: UnitController[];
-    cursor: CursorController;
   };
   container = new Container();
   field: FieldEntity;
+  cursor: CursorEntity;
   layer = {
     activeUnit: new RenderLayer(),
   };
@@ -79,13 +79,12 @@ export class BattleFieldScene {
       });
     });
 
-    const cursorController = new CursorController({ cellSize });
+    this.cursor = new CursorEntity();
 
     this.controllers = {
       range: rangeController,
       playerUnits: playerUnitControllers,
       enemyUnits: enemyUnitControllers,
-      cursor: cursorController,
     };
 
     this.container.addChild(
@@ -93,7 +92,7 @@ export class BattleFieldScene {
       this.controllers.range.container,
       ...this.controllers.playerUnits.map((unit) => unit.container),
       ...this.controllers.enemyUnits.map((unit) => unit.container),
-      this.controllers.cursor.graphic,
+      this.cursor.graphic,
       this.layer.activeUnit
     );
 
@@ -110,7 +109,7 @@ export class BattleFieldScene {
   }
 
   animate({ deltaTime, frame }: { deltaTime: number; frame: number }) {
-    this.controllers.cursor.animate(frame);
+    this.cursor.animate(frame);
     this.controllers.range.animate(frame);
 
     this.animateByQue(deltaTime);

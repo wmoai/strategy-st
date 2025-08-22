@@ -14,7 +14,7 @@ export abstract class BattleFieldSceneState {
 
   moveCursor({ position }: { position: Position }) {
     const terrain = this.env.scene.field.data.getTerrain(position);
-    this.env.scene.controllers.cursor.setPosition(position);
+    this.env.scene.cursor.setPosition(position);
     this.env.game.handlers.onFocusTerrain(terrain);
   }
 
