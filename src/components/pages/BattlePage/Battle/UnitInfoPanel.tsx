@@ -2,10 +2,10 @@ import { type FC } from "react";
 import { tv } from "tailwind-variants";
 
 import { UnitImage } from "@/components/parts/UnitImage";
-import type { UnitController } from "@/game/elements/unit/UnitController";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
 type Props = {
-  unit: UnitController;
+  unit: UnitEntity;
 };
 
 export const UnitInfoPanel: FC<Props> = ({ unit }) => {

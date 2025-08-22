@@ -3,15 +3,14 @@ import { Application } from "pixi.js";
 import type { TerrainData } from "@/data/terrainData";
 import type { UnitData } from "@/data/unitData";
 
-import { FieldComponent } from "../elements/field/FieldComponent";
-import type { ActionPrediction } from "../elements/game/GameEnv";
-import { BattleFieldScene } from "../elements/game/scenes/battleFieldScene/BattleFieldScene";
 import { UnitComponent } from "../elements/unit/UnitComponent";
-import type { UnitController } from "../elements/unit/UnitController";
+import type { UnitEntity } from "../entities/unit/UnitEntity";
+import { BattleFieldScene } from "../scenes/battleFieldScene/BattleFieldScene";
+import type { ActionPrediction } from "../scenes/battleFieldScene/types";
 import { AssetLoader } from "../utils/AssetLoader";
 
 type Handlers = {
-  onFocusUnit: (unitController: UnitController) => void;
+  onFocusUnit: (unitController: UnitEntity) => void;
   onFocusTerrain: (terrain: TerrainData) => void;
   onPredictAct: (args?: {
     from: ActionPrediction;
@@ -30,38 +29,23 @@ type Constructor = {
 
 export class Game {
   private readonly app = new Application();
-  // private readonly env: GameEnv;
   readonly handlers: Handlers;
   scene: BattleFieldScene;
 
   private constructor({ isPlayerOffense, sortieUnits, handlers }: Constructor) {
     this.handlers = handlers;
-    // this.env = new GameEnv({
-    //   isPlayerOffense,
-    //   sortieUnits,
-    //   handlers,
-    // });
-    // this.app.stage.addChild(
-    //   this.env.controllers.field.container,
-    //   this.env.controllers.range.container,
-    //   ...this.env.controllers.playerUnits.map((unit) => unit.container),
-    //   ...this.env.controllers.enemyUnits.map((unit) => unit.container),
-    //   this.env.controllers.cursor.graphic,
-    //   this.env.layer.activeUnit
-    // );
     this.scene = new BattleFieldScene({
       game: this,
       isPlayerOffense,
       sortieUnits,
     });
-    this.app.stage.addChild(this.scene.container);
+    this.app.stage = this.scene.container;
     this.app.stage.pivot.x = this.app.stage.width / 2;
   }
 
   static async create(args: Constructor) {
     // FIXME: delete ========
     await UnitComponent.preload();
-    await FieldComponent.preload();
     // ======================
     await AssetLoader.loadInitialAssets();
     return new Game(args);

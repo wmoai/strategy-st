@@ -1,0 +1,71 @@
+import { Container, Graphics, Sprite } from "pixi.js";
+
+import type { UnitData } from "@/data/unitData";
+import { cellSize } from "@/game/constants";
+
+import { KlassSpriteSheet } from "./KlassSpriteSheet";
+import type { UnitState } from "./UnitEntity";
+
+const hpBarWidth = cellSize - 4;
+
+export class UnitComponent {
+  private readonly unitData: UnitData;
+  private readonly isOffense: boolean;
+  readonly container: Container;
+  children: {
+    unit: Sprite;
+    redLine: Graphics;
+    greenLine: Graphics;
+  };
+
+  constructor({
+    unitData,
+    isOffense,
+  }: {
+    unitData: UnitData;
+    isOffense: boolean;
+  }) {
+    this.unitData = unitData;
+    this.isOffense = isOffense;
+    this.container = new Container();
+
+    const margin = cellSize / 10;
+    this.children = {
+      unit: new Sprite({
+        width: cellSize - margin * 2,
+        height: cellSize - margin * 2,
+        x: margin,
+        y: margin,
+      }),
+      redLine: new Graphics()
+        .rect(2, cellSize - 4, hpBarWidth, 2)
+        .fill(0xdc143c),
+      greenLine: new Graphics()
+        .rect(2, cellSize - 4, hpBarWidth, 2)
+        .fill(0x40e0d0),
+    };
+    this.container = new Container({
+      children: [
+        this.children.unit,
+        this.children.redLine,
+        this.children.greenLine,
+      ],
+    });
+  }
+
+  update(state: UnitState) {
+    this.children.unit.texture = KlassSpriteSheet.getUnitTexture({
+      unitData: this.unitData,
+      isOffense: this.isOffense,
+      isActed: state.isActed,
+    });
+    this.children.greenLine.width = Math.max(
+      (hpBarWidth * state.currentHp) / this.unitData.hp,
+      0
+    );
+    this.container.position.set(
+      state.position.x * cellSize,
+      state.position.y * cellSize
+    );
+  }
+}

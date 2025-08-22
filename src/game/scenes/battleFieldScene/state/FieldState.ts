@@ -1,19 +1,19 @@
 import type { Position } from "@/data/fieldData";
-import type { UnitController } from "@/game/elements/unit/UnitController";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
 import { BattleFieldSceneState } from "./BattleFieldSceneState";
 import type { BattleFieldSceneEnv } from "../types";
 import { FocusState } from "./FocusState";
 
 export class FieldState extends BattleFieldSceneState {
-  hoveredUnit?: UnitController;
+  hoveredUnit?: UnitEntity;
 
   constructor({
     env,
     hoveredUnit,
   }: {
     env: BattleFieldSceneEnv;
-    hoveredUnit?: UnitController;
+    hoveredUnit?: UnitEntity;
   }) {
     super(env);
     this.hoveredUnit = hoveredUnit;
@@ -46,7 +46,7 @@ export class FieldState extends BattleFieldSceneState {
     }
   }
 
-  private focusUnit(unit: UnitController) {
+  private focusUnit(unit: UnitEntity) {
     if (!this.env.scene.isMyTurn) {
       return;
     }
@@ -57,5 +57,9 @@ export class FieldState extends BattleFieldSceneState {
         hoveredUnit: this.hoveredUnit,
       })
     );
+  }
+
+  animate() {
+    // noop
   }
 }

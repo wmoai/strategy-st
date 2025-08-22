@@ -2,8 +2,8 @@ import { atom } from "jotai";
 
 import type { TerrainData } from "@/data/terrainData";
 import type { UnitData } from "@/data/unitData";
-import type { ActionPrediction } from "@/game/elements/game/GameEnv";
-import { UnitController } from "@/game/elements/unit/UnitController";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
+import type { ActionPrediction } from "@/game/scenes/battleFieldScene/types";
 
 export const battleStepAtom = atom<"sortie" | "battle">("sortie");
 
@@ -21,7 +21,7 @@ export const sortieAtom = atom<{
   },
 });
 
-export const focusedUnitAtom = atom<UnitController | undefined>();
+export const focusedUnitAtom = atom<UnitEntity | undefined>();
 export const focusedTerrainAtom = atom<TerrainData | undefined>();
 export const actionPredictionAtom = atom<
   | {

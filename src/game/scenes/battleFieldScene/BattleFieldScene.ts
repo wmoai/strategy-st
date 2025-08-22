@@ -2,12 +2,10 @@ import { Container, RenderLayer } from "pixi.js";
 
 import type { Position } from "@/data/fieldData";
 import type { UnitData } from "@/data/unitData";
-import { cellSize } from "@/game/constants";
 import type { Animation } from "@/game/elements/animation/Animation";
-import { RangeController } from "@/game/elements/range/RangeController";
-import { UnitController } from "@/game/elements/unit/UnitController";
 import { CursorEntity } from "@/game/entities/cursor/CursorEntity";
 import { FieldEntity } from "@/game/entities/field/FieldEntity";
+import { UnitEntity } from "@/game/entities/unit/UnitEntity";
 import type { Game } from "@/game/main/Game";
 
 import type { BattleFieldSceneState } from "./state/BattleFieldSceneState";
@@ -17,15 +15,13 @@ import type { ActionPrediction } from "./types";
 export class BattleFieldScene {
   game: Game;
   isPlayerOffense: boolean;
-  controllers: {
-    range: RangeController;
-    playerUnits: UnitController[];
-    enemyUnits: UnitController[];
-  };
   container = new Container();
   field: FieldEntity;
   cursor: CursorEntity;
+  playerUnits: UnitEntity[];
+  enemyUnits: UnitEntity[];
   layer = {
+    range: new Container(),
     activeUnit: new RenderLayer(),
   };
   animationQue: Array<{
@@ -33,7 +29,6 @@ export class BattleFieldScene {
     onEnd?: () => void;
   }> = [];
   private state?: BattleFieldSceneState;
-  // FIXME: 怪しい
   turn: "offense" | "defense" = "defense";
 
   constructor({
@@ -52,15 +47,13 @@ export class BattleFieldScene {
     this.isPlayerOffense = isPlayerOffense;
 
     this.field = FieldEntity.randomField();
-    const rangeController = new RangeController({ cellSize });
 
     const playerInitPositions =
       this.field.initialUnitPositions(isPlayerOffense);
-    const playerUnitControllers = sortieUnits.player.map((unitData, index) => {
+    this.playerUnits = sortieUnits.player.map((unitData, index) => {
       const position = playerInitPositions[index];
-      return new UnitController({
+      return new UnitEntity({
         unitId: unitData.id,
-        cellSize,
         isOffense: isPlayerOffense,
         position,
       });
@@ -69,11 +62,10 @@ export class BattleFieldScene {
     const enemyInitPositions = this.field.initialUnitPositions(
       !isPlayerOffense
     );
-    const enemyUnitControllers = sortieUnits.enemy.map((unitData, index) => {
+    this.enemyUnits = sortieUnits.enemy.map((unitData, index) => {
       const position = enemyInitPositions[index];
-      return new UnitController({
+      return new UnitEntity({
         unitId: unitData.id,
-        cellSize,
         isOffense: !isPlayerOffense,
         position,
       });
@@ -81,24 +73,18 @@ export class BattleFieldScene {
 
     this.cursor = new CursorEntity();
 
-    this.controllers = {
-      range: rangeController,
-      playerUnits: playerUnitControllers,
-      enemyUnits: enemyUnitControllers,
-    };
-
     this.container.addChild(
       this.field.container,
-      this.controllers.range.container,
-      ...this.controllers.playerUnits.map((unit) => unit.container),
-      ...this.controllers.enemyUnits.map((unit) => unit.container),
+      this.layer.range,
+      ...this.playerUnits.map((unit) => unit.container),
+      ...this.enemyUnits.map((unit) => unit.container),
       this.cursor.graphic,
       this.layer.activeUnit
     );
 
     const mapState = new FieldState({ env: { game: this.game, scene: this } });
     mapState.moveCursor({
-      position: this.controllers.playerUnits[0].position,
+      position: this.playerUnits[0].position,
     });
     this.changeState(mapState);
 
@@ -110,8 +96,7 @@ export class BattleFieldScene {
 
   animate({ deltaTime, frame }: { deltaTime: number; frame: number }) {
     this.cursor.animate(frame);
-    this.controllers.range.animate(frame);
-
+    this.state?.animate(frame);
     this.animateByQue(deltaTime);
   }
 
@@ -137,24 +122,13 @@ export class BattleFieldScene {
   }
 
   findUnitFromPosition({ x, y }: Position) {
-    return this.controllers.playerUnits
-      .concat(this.controllers.enemyUnits)
+    return this.playerUnits
+      .concat(this.enemyUnits)
       .find((unit) => unit.position.x === x && unit.position.y === y);
   }
 
-  isMyUnit(unit: UnitController) {
+  isMyUnit(unit: UnitEntity) {
     return this.isPlayerOffense === unit.isOffense;
-  }
-
-  showUnitRange({ unit }: { unit: UnitController }) {
-    this.controllers.range.createMoveRange({
-      field: this.field.data,
-      unit,
-      opponentUnits:
-        this.isPlayerOffense === unit.isOffense
-          ? this.controllers.enemyUnits
-          : this.controllers.playerUnits,
-    });
   }
 
   changeState(nextState: BattleFieldSceneState) {
@@ -172,13 +146,9 @@ export class BattleFieldScene {
 
   get turnUnits() {
     if (this.isPlayerOffense) {
-      return this.turn === "offense"
-        ? this.controllers.playerUnits
-        : this.controllers.enemyUnits;
+      return this.turn === "offense" ? this.playerUnits : this.enemyUnits;
     } else {
-      return this.turn === "defense"
-        ? this.controllers.playerUnits
-        : this.controllers.enemyUnits;
+      return this.turn === "defense" ? this.playerUnits : this.enemyUnits;
     }
   }
 
@@ -192,8 +162,8 @@ export class BattleFieldScene {
     from,
     to,
   }: {
-    from: UnitController;
-    to: UnitController;
+    from: UnitEntity;
+    to: UnitEntity;
   }): {
     from: ActionPrediction;
     to: ActionPrediction;
@@ -233,8 +203,9 @@ export class BattleFieldScene {
     };
   }
 
-  predictAct({ from, to }: { from: UnitController; to: UnitController }) {
-    this.game.handlers.onPredictAct(this.getActionPrediction({ from, to }));
+  predictAct({ from, to }: { from: UnitEntity; to: UnitEntity }) {
+    const actionPrediction = this.getActionPrediction({ from, to });
+    this.game.handlers.onPredictAct(actionPrediction);
   }
 
   clearActionPrediction() {

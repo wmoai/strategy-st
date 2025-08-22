@@ -35,7 +35,7 @@ export class TerrainSpriteSheet {
   private readonly connectedTextureRecord: Record<
     TerrainId,
     ConnectedTerrainTexture
-  > | null = null;
+  >;
 
   private static getInstance() {
     if (!TerrainSpriteSheet.instance) {
@@ -48,7 +48,7 @@ export class TerrainSpriteSheet {
     const baseTexture = AssetLoader.loadTexture("terrain");
     const tileSize = 40;
 
-    const result: Record<TerrainId, ConnectedTerrainTexture> = {};
+    const result: TerrainSpriteSheet["connectedTextureRecord"] = {};
     for (let xIndex = 0; xIndex < baseTexture.width / tileSize; xIndex++) {
       const connectionBuffer: TerrainTexture[] = [];
 
@@ -87,12 +87,9 @@ export class TerrainSpriteSheet {
   }
 
   static createFieldContainer(fieldData: FieldData) {
-    return TerrainSpriteSheet.getInstance().createFieldContainer(fieldData);
-  }
-
-  private createFieldContainer(fieldData: FieldData) {
+    const instance = TerrainSpriteSheet.getInstance();
     const container = new Container();
-    const { connectedTextureRecord } = this;
+    const { connectedTextureRecord } = instance;
     if (connectedTextureRecord === null) {
       throw new Error("terrain textures not preloaded");
     }
@@ -103,7 +100,7 @@ export class TerrainSpriteSheet {
         const textureSet = connectedTextureRecord[cellTerrain.id];
         terrainTextureParts.forEach((part) => {
           container.addChild(
-            this.createSprite({
+            instance.createSprite({
               fieldData,
               textureSet,
               part,

@@ -1,4 +1,4 @@
-import type { UnitController } from "@/game/elements/unit/UnitController";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 import type { Game } from "@/game/main/Game";
 
 import type { BattleFieldScene } from "./BattleFieldScene";
@@ -9,7 +9,7 @@ export type BattleFieldSceneEnv = {
 };
 
 export type ActionPrediction = {
-  unit: UnitController;
+  unit: UnitEntity;
   effect: number | null;
   hit: number | null;
   crit: number | null;

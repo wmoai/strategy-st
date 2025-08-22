@@ -1,14 +1,16 @@
 import type { Position } from "@/data/fieldData";
-import type { UnitController } from "@/game/elements/unit/UnitController";
+import { RangeEntity } from "@/game/entities/range/RangeEntity";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
 import { BattleFieldSceneState } from "./BattleFieldSceneState";
 import type { BattleFieldSceneEnv } from "../types";
 import { FieldState } from "./FieldState";
 
 export class ActState extends BattleFieldSceneState {
-  unit: UnitController;
+  unit: UnitEntity;
   position: Position;
-  target?: UnitController;
+  target?: UnitEntity;
+  range: RangeEntity;
 
   constructor({
     env,
@@ -16,24 +18,29 @@ export class ActState extends BattleFieldSceneState {
     position,
   }: {
     env: BattleFieldSceneEnv;
-    unit: UnitController;
+    unit: UnitEntity;
     position: Position;
   }) {
     super(env);
     this.unit = unit;
     this.position = position;
-  }
 
-  start() {
-    this.env.scene.controllers.range.createActRange({
-      field: this.env.scene.field.data,
-      unit: this.unit,
-      position: this.position,
+    this.range = new RangeEntity({
+      unitData: unit.data,
+      isHealer: unit.isHealer,
+      position,
+      fieldData: env.scene.field.data,
+      forceMove: 0,
     });
   }
 
+  start() {
+    this.range.showRange();
+    this.env.scene.layer.range.addChild(this.range.container);
+  }
+
   end() {
-    this.env.scene.controllers.range.removeRange();
+    this.env.scene.layer.range.removeChild(this.range.container);
     this.env.game.handlers.onPredictAct();
   }
 
@@ -44,7 +51,7 @@ export class ActState extends BattleFieldSceneState {
       const actable = this.unit.isHealer
         ? this.unit.isOffense === hoveredUnit.isOffense
         : this.unit.isOffense !== hoveredUnit.isOffense;
-      if (actable && this.env.scene.controllers.range.isActable(position)) {
+      if (actable && this.range.isActable(position)) {
         this.target = hoveredUnit;
         this.env.scene.predictAct({ from: this.unit, to: hoveredUnit });
       } else {
@@ -59,19 +66,20 @@ export class ActState extends BattleFieldSceneState {
       return;
     }
     const position = this.env.scene.cursor.position;
-    if (this.env.scene.controllers.range.isActable(position) && this.target) {
+    if (this.range.isActable(position) && this.target) {
       this.act(this.target);
-    } else if (this.env.scene.controllers.range.isMovable(position)) {
+    } else if (this.range.isMovable(position)) {
       this.standBy();
     } else {
       this.cancelMove();
     }
   }
 
-  private act(target: UnitController) {}
+  private act(target: UnitEntity) {
+    console.log(target);
+  }
 
   private standBy() {
-    this.env.scene.controllers.range.removeRange();
     this.unit.standBy(this.position);
     this.env.scene.changeState(
       new FieldState({
@@ -81,13 +89,16 @@ export class ActState extends BattleFieldSceneState {
   }
 
   private cancelMove() {
-    this.env.scene.controllers.range.removeRange();
-    this.unit.reset();
+    this.unit.resetToState();
     this.env.scene.changeState(
       new FieldState({
         env: this.env,
         hoveredUnit: this.unit,
       })
     );
+  }
+
+  animate(frame: number) {
+    this.range.animate(frame);
   }
 }

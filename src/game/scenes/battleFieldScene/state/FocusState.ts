@@ -1,5 +1,6 @@
 import type { Position } from "@/data/fieldData";
-import type { UnitController } from "@/game/elements/unit/UnitController";
+import { RangeEntity } from "@/game/entities/range/RangeEntity";
+import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
 import { BattleFieldSceneState } from "./BattleFieldSceneState";
 import type { BattleFieldSceneEnv } from "../types";
@@ -7,8 +8,9 @@ import { ActState } from "./ActState";
 import { FieldState } from "./FieldState";
 
 export class FocusState extends BattleFieldSceneState {
-  focusedUnit: UnitController;
-  hoveredUnit?: UnitController;
+  focusedUnit: UnitEntity;
+  hoveredUnit?: UnitEntity;
+  range: RangeEntity;
 
   constructor({
     env,
@@ -16,20 +18,37 @@ export class FocusState extends BattleFieldSceneState {
     hoveredUnit,
   }: {
     env: BattleFieldSceneEnv;
-    focusedUnit: UnitController;
-    hoveredUnit?: UnitController;
+    focusedUnit: UnitEntity;
+    hoveredUnit?: UnitEntity;
   }) {
     super(env);
     this.focusedUnit = focusedUnit;
     this.hoveredUnit = hoveredUnit;
+
+    const opponentUnits =
+      env.scene.isPlayerOffense === focusedUnit.isOffense
+        ? env.scene.enemyUnits
+        : env.scene.playerUnits;
+    const noEntries = opponentUnits.map((unit) => ({
+      x: unit.position.x,
+      y: unit.position.y,
+    }));
+    this.range = new RangeEntity({
+      unitData: focusedUnit.data,
+      isHealer: focusedUnit.isHealer,
+      position: focusedUnit.position,
+      fieldData: env.scene.field.data,
+      noEntries,
+    });
   }
 
   start() {
-    this.env.scene.showUnitRange({ unit: this.focusedUnit });
+    this.range.showRange();
+    this.env.scene.layer.range.addChild(this.range.container);
   }
 
   end() {
-    this.env.scene.controllers.range.removeRange();
+    this.env.scene.layer.range.removeChild(this.range.container);
   }
 
   override moveCursor({ position }: { position: Position }) {
@@ -49,7 +68,7 @@ export class FocusState extends BattleFieldSceneState {
       this.changeFocusUnit(hoveredUnit);
     } else if (
       this.env.scene.isMyUnit(focusedUnit) &&
-      this.env.scene.controllers.range.isMovable(position)
+      this.range.isMovable(position)
     ) {
       this.moveUnit({ unit: focusedUnit, position });
     } else {
@@ -57,22 +76,26 @@ export class FocusState extends BattleFieldSceneState {
     }
   }
 
-  private changeFocusUnit(unit: UnitController) {
-    this.focusedUnit = unit;
-    this.env.scene.showUnitRange({ unit });
+  private changeFocusUnit(unit: UnitEntity) {
+    this.env.scene.changeState(
+      new FocusState({
+        env: this.env,
+        focusedUnit: unit,
+      })
+    );
   }
 
   private moveUnit({
     unit,
     position,
   }: {
-    unit: UnitController;
+    unit: UnitEntity;
     position: Position;
   }) {
-    const route = this.env.scene.controllers.range.routeTo(position);
+    const route = this.range.routeTo(position);
     this.env.scene.layer.activeUnit.attach(unit.container);
     this.env.scene.animationQue.push({
-      animations: unit.component.moveAnimations(route),
+      animations: unit.createMoveAnimations(route),
       onEnd: () => {
         this.env.scene.layer.activeUnit.detach(unit.container);
         this.env.scene.changeState(
@@ -84,7 +107,7 @@ export class FocusState extends BattleFieldSceneState {
         );
       },
     });
-    this.env.scene.controllers.range.removeRange();
+    this.range.hideRange();
   }
 
   private cancelFocus() {
@@ -93,5 +116,9 @@ export class FocusState extends BattleFieldSceneState {
         env: this.env,
       })
     );
+  }
+
+  animate(frame: number) {
+    this.range.animate(frame);
   }
 }

@@ -2,7 +2,7 @@ import { type FC } from "react";
 import { tv } from "tailwind-variants";
 
 import { UnitImage } from "@/components/parts/UnitImage";
-import type { ActionPrediction } from "@/game/elements/game/GameEnv";
+import type { ActionPrediction } from "@/game/scenes/battleFieldScene/types";
 
 type Props = {
   from: ActionPrediction;
