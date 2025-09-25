@@ -62,8 +62,8 @@ const unitNameTv = tv({
   base: "min-w-[6em] px-3 py-[1px] border border-gray-500 text-lg text-center",
   variants: {
     isOffense: {
-      true: "bg-red-900",
-      false: "bg-blue-900",
+      true: "bg-red-950",
+      false: "bg-blue-950",
     },
   },
 });

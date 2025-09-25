@@ -54,7 +54,7 @@ export const Battle: FC = () => {
   return (
     <div className="flex flex-col h-screen bg-[#222] text-gray-100 overflow-hidden">
       <div className="h-[100px] m-auto shrink-0">
-        <div className="flex items-stretch w-2xl h-full bg-gray-700">
+        <div className="flex items-stretch w-2xl h-full bg-gray-800">
           <button
             type="button"
             className="bg-green-700 p-4 rounded-xl font-bold"

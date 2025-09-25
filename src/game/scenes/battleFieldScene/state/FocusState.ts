@@ -39,7 +39,7 @@ export class FocusState extends BattleFieldSceneState {
       position: focusedUnit.position,
       fieldData: env.scene.field.data,
       noEntries,
-      forceMove: Infinity,
+      forceMove: Infinity, // debug
     });
   }
 

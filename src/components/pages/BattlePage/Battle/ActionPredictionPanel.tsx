@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import { type FC } from "react";
 import { tv } from "tailwind-variants";
 
@@ -11,53 +12,80 @@ type Props = {
 
 export const ActionPredictionPanel: FC<Props> = ({ from, to }) => {
   const hpClass = hpTv();
+  const fromBGClass = effectBG({
+    attr: from.unit.isHealer
+      ? "heal"
+      : from.unit.isOffense
+      ? "offense"
+      : "defense",
+  });
+  const toBGClass = effectBG({
+    attr: to.unit.isOffense ? "offense" : "defense",
+  });
+
   return (
-    <div className="flex gap-2 items-center justify-center h-full">
-      <div>
-        <UnitImage unit={from.unit.data} isBlue={!from.unit.isOffense} />
+    <div className="flex items-stretch justify-center h-full">
+      <div
+        className={clsx(
+          "flex-1 grid items-center justify-end px-4",
+          fromBGClass
+        )}
+      >
         <div>
-          <span className={hpClass}>{from.unit.currentHp}</span>
-          <span>/{from.unit.data.hp}</span>
+          <UnitImage unit={from.unit.data} isBlue={!from.unit.isOffense} />
+          <div>
+            <span className={hpClass}>{from.unit.currentHp}</span>
+            <span>/{from.unit.data.hp}</span>
+          </div>
         </div>
       </div>
-      <table className="text-center [&_td]:px-1 [&_td]:min-w-[3em] [&_td:first-child]:bg-red-800">
+      <table className="text-center [&_td]:px-1 [&_td]:min-w-[3.5em] text-xl">
         <tbody>
-          <tr>
-            <td>{from.effect}</td>
-            <th>効果</th>
-            <td>{to.effect ?? "-"}</td>
-          </tr>
-          <tr>
+          <tr className={clsx("[&>td]:pt-1", fromBGClass)}>
+            <td>{from.effect ? Math.abs(from.effect) : "-"}</td>
             <td>{from.hit === null ? "-" : from.hit + "%"}</td>
-            <th>命中</th>
-            <td>{to.hit === null ? "-" : to.hit + "%"}</td>
-          </tr>
-          <tr>
             <td>{from.crit === null ? "-" : from.crit + "%"}</td>
-            <th>会心</th>
+          </tr>
+          <tr className="text-sm text-gray-300">
+            <td>効果</td>
+            <td>命中</td>
+            <td>会心</td>
+          </tr>
+          <tr className={clsx("[&>td]:pb-1", toBGClass)}>
+            <td>{to.effect ? Math.abs(to.effect) : "-"}</td>
+            <td>{to.hit === null ? "-" : to.hit + "%"}</td>
             <td>{to.crit === null ? "-" : to.crit + "%"}</td>
           </tr>
         </tbody>
       </table>
-      <div>
-        <UnitImage unit={to.unit.data} isBlue={!to.unit.isOffense} />
+      <div
+        className={clsx(
+          "flex-1 grid items-center justify-start px-4",
+          toBGClass
+        )}
+      >
         <div>
-          <span className={hpClass}>{to.unit.currentHp}</span>
-          <span>/{to.unit.data.hp}</span>
+          <UnitImage unit={to.unit.data} isBlue={!to.unit.isOffense} />
+          <div>
+            <span className={hpClass}>{to.unit.currentHp}</span>
+            <span>/{to.unit.data.hp}</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const hpTv = tv({
-  base: "text-xl text-green-300",
-});
-const hpDiffTv = tv({
-  base: "text-red-300 ms-0.5",
+const effectBG = tv({
   variants: {
-    isHeal: {
-      true: "text-green-400",
+    attr: {
+      offense: "bg-[#753b3b]",
+      defense: "bg-[#3b3e7c]",
+      heal: "bg-[#3e6631]",
     },
   },
+});
+
+const hpTv = tv({
+  base: "text-2xl text-green-300",
 });
