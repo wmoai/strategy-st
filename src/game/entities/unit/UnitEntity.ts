@@ -17,7 +17,7 @@ export class UnitEntity {
   readonly data: UnitData;
   readonly klass: KlassData;
   readonly isOffense: boolean;
-  private component: UnitComponent;
+  component: UnitComponent;
   private state: UnitState;
 
   constructor({

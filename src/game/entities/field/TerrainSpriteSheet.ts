@@ -85,6 +85,7 @@ export class TerrainSpriteSheet {
     }
     this.connectedTextureRecord = result;
   }
+
   static createFieldContainer(fieldData: FieldData) {
     return TerrainSpriteSheet.getInstance().createFieldContainer(fieldData);
   }

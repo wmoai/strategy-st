@@ -39,7 +39,7 @@ export const ActionPredictionPanel: FC<Props> = ({ from, to }) => {
           </div>
         </div>
       </div>
-      <table className="text-center [&_td]:px-1 [&_td]:min-w-[3.5em] text-xl">
+      <table className="text-center [&_td]:px-1 [&_td]:min-w-[3em] text-xl">
         <tbody>
           <tr className={clsx("[&>td]:pt-1", fromBGClass)}>
             <td>{from.effect ? Math.abs(from.effect) : "-"}</td>

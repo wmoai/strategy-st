@@ -76,7 +76,8 @@ export class ActState extends BattleFieldSceneState {
   }
 
   private act(target: UnitEntity) {
-    console.log(target);
+    target.component.burst();
+    // TODO
   }
 
   private standBy() {
@@ -84,7 +85,7 @@ export class ActState extends BattleFieldSceneState {
     this.env.scene.changeState(
       new FieldState({
         env: this.env,
-      })
+      }),
     );
   }
 
@@ -94,7 +95,7 @@ export class ActState extends BattleFieldSceneState {
       new FieldState({
         env: this.env,
         hoveredUnit: this.unit,
-      })
+      }),
     );
   }
 

@@ -3,6 +3,7 @@ import { Container, Graphics, Sprite } from "pixi.js";
 import type { UnitData } from "@/data/unitData";
 import { cellSize } from "@/game/constants";
 
+import { BurstAnimation } from "./BurstAnimation";
 import { KlassSpriteSheet } from "./KlassSpriteSheet";
 import type { UnitState } from "./UnitEntity";
 
@@ -61,11 +62,28 @@ export class UnitComponent {
     });
     this.children.greenLine.width = Math.max(
       (hpBarWidth * state.currentHp) / this.unitData.hp,
-      0
+      0,
     );
     this.container.position.set(
       state.position.x * cellSize,
-      state.position.y * cellSize
+      state.position.y * cellSize,
     );
+  }
+
+  burst() {
+    const animation = BurstAnimation.createAnimatedSprite();
+    animation.x = cellSize / 2;
+    animation.y = cellSize / 2;
+    animation.width = cellSize * 3;
+    animation.height = cellSize * 3;
+    animation.anchor.set(0.5);
+    animation.animationSpeed = 0.5;
+    animation.loop = false;
+    animation.play();
+    animation.onComplete = () => {
+      this.container.removeChild(animation);
+      animation.destroy();
+    };
+    this.container.addChild(animation);
   }
 }

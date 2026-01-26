@@ -53,6 +53,9 @@ export class FocusState extends BattleFieldSceneState {
   }
 
   override moveCursor({ position }: { position: Position }) {
+    if (this.env.scene.isAnimating) {
+      return;
+    }
     super.moveCursor({ position });
     this.hoveredUnit = this.env.scene.findUnitFromPosition(position);
     this.env.game.handlers.onFocusUnit(this.hoveredUnit ?? this.focusedUnit);

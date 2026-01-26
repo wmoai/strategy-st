@@ -42,6 +42,7 @@ export const calculateShortestPath = ({
       });
     }
   );
+  noEntries.forEach(({ x, y }) => (calculatingMap[y][x].isConfirmed = true));
 
   const result: RangeCell[][] = fieldData.getTerrainRows.map((row, y) =>
     row.map((_, x) => ({
@@ -105,13 +106,7 @@ export const calculateShortestPath = ({
           y: y + dy,
         };
         const cell = calculatingMap[forwardPos.y][forwardPos.x];
-        if (
-          !fieldData.isActiveCell(forwardPos) ||
-          cell.isConfirmed ||
-          noEntries.some(
-            (pos) => pos.x === forwardPos.x && pos.y === forwardPos.y
-          )
-        ) {
+        if (!fieldData.isActiveCell(forwardPos) || cell.isConfirmed) {
           return;
         }
         const forwardTerrain = fieldData.getTerrain(forwardPos);
