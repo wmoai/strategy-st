@@ -76,7 +76,7 @@ export class ActState extends BattleFieldSceneState {
   }
 
   private act(target: UnitEntity) {
-    target.component.burst();
+    target.component.animateHeal();
     // TODO
   }
 

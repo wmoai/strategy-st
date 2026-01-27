@@ -2,23 +2,23 @@ import { AnimatedSprite, Rectangle, Texture } from "pixi.js";
 
 import { AssetLoader } from "@/game/utils/AssetLoader";
 
-export class BurstAnimation {
-  private static instance: BurstAnimation;
+export class HealAnimation {
+  private static instance: HealAnimation;
   private textures: Texture[];
 
   private static getInstance() {
-    if (!BurstAnimation.instance) {
-      BurstAnimation.instance = new BurstAnimation();
+    if (!HealAnimation.instance) {
+      HealAnimation.instance = new HealAnimation();
     }
-    return BurstAnimation.instance;
+    return HealAnimation.instance;
   }
 
   private constructor() {
-    const baseTexture = AssetLoader.loadTexture("fire");
+    const baseTexture = AssetLoader.loadTexture("light");
     const tileSize = 120;
     this.textures = [];
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       const x = (i * tileSize) % baseTexture.width;
       const y = Math.floor((i * tileSize) / baseTexture.width) * tileSize;
       this.textures.push(
@@ -31,7 +31,7 @@ export class BurstAnimation {
   }
 
   static createAnimatedSprite() {
-    const instance = BurstAnimation.getInstance();
+    const instance = HealAnimation.getInstance();
     return new AnimatedSprite(instance.textures);
   }
 }

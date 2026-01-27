@@ -1,6 +1,6 @@
 import { Assets, Texture } from "pixi.js";
 
-type TextureKey = "klass" | "terrain" | "fire" | "heal";
+type TextureKey = "klass" | "terrain" | "fire" | "light";
 
 export class AssetLoader {
   private static instance: AssetLoader | null = null;
@@ -21,7 +21,7 @@ export class AssetLoader {
       await Assets.load("/strategy/terrain.png"),
     );
     instance.textures.set("fire", await Assets.load("/strategy/fire.png"));
-    instance.textures.set("heal", await Assets.load("/strategy/light.png"));
+    instance.textures.set("light", await Assets.load("/strategy/light.png"));
   }
 
   static loadTexture(key: TextureKey) {

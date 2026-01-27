@@ -4,6 +4,7 @@ import type { UnitData } from "@/data/unitData";
 import { cellSize } from "@/game/constants";
 
 import { BurstAnimation } from "./BurstAnimation";
+import { HealAnimation } from "./HealAnimation";
 import { KlassSpriteSheet } from "./KlassSpriteSheet";
 import type { UnitState } from "./UnitEntity";
 
@@ -70,7 +71,7 @@ export class UnitComponent {
     );
   }
 
-  burst() {
+  animateBurst() {
     const animation = BurstAnimation.createAnimatedSprite();
     animation.x = cellSize / 2;
     animation.y = cellSize / 2;
@@ -79,6 +80,24 @@ export class UnitComponent {
     animation.anchor.set(0.5);
     animation.animationSpeed = 0.5;
     animation.loop = false;
+    animation.play();
+    animation.onComplete = () => {
+      this.container.removeChild(animation);
+      animation.destroy();
+    };
+    this.container.addChild(animation);
+  }
+
+  animateHeal() {
+    const animation = HealAnimation.createAnimatedSprite();
+    animation.x = cellSize / 2;
+    animation.y = cellSize / 4;
+    animation.width = cellSize * 1.5;
+    animation.height = cellSize * 1.5;
+    animation.anchor.set(0.5);
+    animation.animationSpeed = 0.4;
+    animation.loop = false;
+    animation.blendMode = "add";
     animation.play();
     animation.onComplete = () => {
       this.container.removeChild(animation);
