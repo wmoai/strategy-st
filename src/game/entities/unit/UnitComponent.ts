@@ -71,6 +71,8 @@ export class UnitComponent {
     );
   }
 
+  animateHpBar(hp: number) {}
+
   animateBurst() {
     const animation = BurstAnimation.createAnimatedSprite();
     animation.x = cellSize / 2;
@@ -80,12 +82,12 @@ export class UnitComponent {
     animation.anchor.set(0.5);
     animation.animationSpeed = 0.5;
     animation.loop = false;
-    animation.play();
     animation.onComplete = () => {
       this.container.removeChild(animation);
       animation.destroy();
     };
     this.container.addChild(animation);
+    animation.play();
   }
 
   animateHeal() {
@@ -95,14 +97,14 @@ export class UnitComponent {
     animation.width = cellSize * 1.5;
     animation.height = cellSize * 1.5;
     animation.anchor.set(0.5);
-    animation.animationSpeed = 0.4;
+    animation.animationSpeed = 0.3;
     animation.loop = false;
     animation.blendMode = "add";
-    animation.play();
     animation.onComplete = () => {
       this.container.removeChild(animation);
       animation.destroy();
     };
     this.container.addChild(animation);
+    animation.play();
   }
 }

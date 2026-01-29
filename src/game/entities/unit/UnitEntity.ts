@@ -82,8 +82,18 @@ export class UnitEntity {
   }
 
   standBy(position: Position) {
-    this.state.position = position;
     this.state.isActed = true;
+    this.changePosition(position);
+  }
+
+  changePosition(position: Position) {
+    this.state.position = position;
+    this.updateComponent();
+  }
+
+  async changeHp(hp: number) {
+    this.state.currentHp = Math.max(0, Math.min(this.data.hp, hp));
+    // TODO: HPバーアニメーション
     this.updateComponent();
   }
 

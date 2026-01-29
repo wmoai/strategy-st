@@ -10,7 +10,6 @@ import type { Animation } from "@/game/types";
 
 import type { BattleFieldSceneState } from "./state/BattleFieldSceneState";
 import { FieldState } from "./state/FieldState";
-import type { ActionPrediction } from "./types";
 
 export class BattleFieldScene {
   game: Game;
@@ -59,9 +58,8 @@ export class BattleFieldScene {
       });
     });
 
-    const enemyInitPositions = this.field.initialUnitPositions(
-      !isPlayerOffense
-    );
+    const enemyInitPositions =
+      this.field.initialUnitPositions(!isPlayerOffense);
     this.enemyUnits = sortieUnits.enemy.map((unitData, index) => {
       const position = enemyInitPositions[index];
       return new UnitEntity({
@@ -79,7 +77,7 @@ export class BattleFieldScene {
       ...this.playerUnits.map((unit) => unit.container),
       ...this.enemyUnits.map((unit) => unit.container),
       this.cursor.graphic,
-      this.layer.activeUnit
+      this.layer.activeUnit,
     );
 
     const mapState = new FieldState({ env: { game: this.game, scene: this } });
@@ -156,59 +154,5 @@ export class BattleFieldScene {
     if (this.turnUnits.every((unit) => unit.isActed)) {
       this.turn = this.turn === "offense" ? "defense" : "offense";
     }
-  }
-
-  private getActionPrediction({
-    from,
-    to,
-  }: {
-    from: UnitEntity;
-    to: UnitEntity;
-  }): {
-    from: ActionPrediction;
-    to: ActionPrediction;
-  } {
-    if (from.isHealer) {
-      return {
-        from: {
-          unit: from,
-          effect: from.data.str,
-          hit: 100,
-          crit: null,
-        },
-        to: {
-          unit: to,
-          effect: null,
-          hit: null,
-          crit: null,
-        },
-      };
-    }
-    const fromTerrain = this.field.data.getTerrain(from.position);
-    const toTerrain = this.field.data.getTerrain(to.position);
-
-    return {
-      from: {
-        unit: from,
-        effect: -from.getActionEffectValueTo(to.data),
-        hit: from.getHitRate({ target: to.data, terrain: toTerrain }),
-        crit: from.getCritRate(),
-      },
-      to: {
-        unit: to,
-        effect: -to.getActionEffectValueTo(from.data),
-        hit: to.getHitRate({ target: from.data, terrain: fromTerrain }),
-        crit: to.getCritRate(),
-      },
-    };
-  }
-
-  predictAct({ from, to }: { from: UnitEntity; to: UnitEntity }) {
-    const actionPrediction = this.getActionPrediction({ from, to });
-    this.game.handlers.onPredictAct(actionPrediction);
-  }
-
-  clearActionPrediction() {
-    this.game.handlers.onPredictAct();
   }
 }
