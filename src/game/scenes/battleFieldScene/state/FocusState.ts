@@ -7,15 +7,13 @@ import { BattleFieldSceneState } from "./BattleFieldSceneState";
 import type { BattleFieldSceneEnv } from "../types";
 import { ActState } from "./ActState";
 import { FieldState } from "./FieldState";
+import { AnimationManager, type Animation } from "../AnimationManager";
 
 export class FocusState extends BattleFieldSceneState {
   focusedUnit: UnitEntity;
   hoveredUnit?: UnitEntity;
   range: RangeEntity;
-  movementAnimation: {
-    route: Position[];
-    onEnd: () => void;
-  } | null = null;
+  animationManager = new AnimationManager();
 
   constructor({
     env,
@@ -58,16 +56,16 @@ export class FocusState extends BattleFieldSceneState {
   }
 
   override moveCursor({ position }: { position: Position }) {
-    if (this.isMoveAnimating) {
+    super.moveCursor({ position });
+    if (this.animationManager.isAnimating) {
       return;
     }
-    super.moveCursor({ position });
     this.hoveredUnit = this.env.scene.findUnitFromPosition(position);
     this.env.game.handlers.onFocusUnit(this.hoveredUnit ?? this.focusedUnit);
   }
 
   override selectCell() {
-    if (this.isMoveAnimating) {
+    if (this.animationManager.isAnimating) {
       return;
     }
     const position = this.env.scene.cursor.position;
@@ -83,10 +81,6 @@ export class FocusState extends BattleFieldSceneState {
     } else {
       this.cancelFocus();
     }
-  }
-
-  private get isMoveAnimating() {
-    return this.movementAnimation !== null;
   }
 
   private changeFocusUnit(unit: UnitEntity) {
@@ -105,8 +99,56 @@ export class FocusState extends BattleFieldSceneState {
     unit: UnitEntity;
     position: Position;
   }) {
-    this.movementAnimation = {
-      route: this.range.routeTo(position),
+    this.env.scene.layer.activeUnit.attach(unit.container);
+    this.range.hideRange();
+
+    const route = this.range.routeTo(position);
+    const animations: Animation[] = route.map((nextPosition) => {
+      const toCoordinates = {
+        x: nextPosition.x * cellSize,
+        y: nextPosition.y * cellSize,
+      };
+
+      return {
+        update: (deltaTime: number) => {
+          const { component } = this.focusedUnit;
+          const distance = {
+            x: toCoordinates.x - component.container.x,
+            y: toCoordinates.y - component.container.y,
+          };
+          const movingDistance = deltaTime * 8;
+          component.container.x =
+            distance.x > 0
+              ? Math.min(
+                  component.container.x + movingDistance,
+                  toCoordinates.x,
+                )
+              : Math.max(
+                  component.container.x - movingDistance,
+                  toCoordinates.x,
+                );
+          component.container.y =
+            distance.y > 0
+              ? Math.min(
+                  component.container.y + movingDistance,
+                  toCoordinates.y,
+                )
+              : Math.max(
+                  component.container.y - movingDistance,
+                  toCoordinates.y,
+                );
+        },
+        isEnd: () => {
+          const { component } = this.focusedUnit;
+          return (
+            component.container.x === toCoordinates.x &&
+            component.container.y === toCoordinates.y
+          );
+        },
+      };
+    });
+    this.animationManager.add({
+      animations,
       onEnd: () => {
         this.env.scene.layer.activeUnit.detach(unit.container);
         this.env.scene.changeState(
@@ -117,9 +159,7 @@ export class FocusState extends BattleFieldSceneState {
           }),
         );
       },
-    };
-    this.env.scene.layer.activeUnit.attach(unit.container);
-    this.range.hideRange();
+    });
   }
 
   private cancelFocus() {
@@ -132,42 +172,6 @@ export class FocusState extends BattleFieldSceneState {
 
   animate(deltaTime: number) {
     this.range.animate(deltaTime);
-    this.animateMove(deltaTime);
-  }
-
-  private animateMove(deltaTime: number) {
-    if (!this.movementAnimation) {
-      return;
-    }
-    const toPosition = this.movementAnimation.route[0];
-    const toCoordinates = {
-      x: toPosition.x * cellSize,
-      y: toPosition.y * cellSize,
-    };
-    const { component } = this.focusedUnit;
-    const distance = {
-      x: toCoordinates.x - component.container.x,
-      y: toCoordinates.y - component.container.y,
-    };
-    const speed = deltaTime * 8;
-    component.container.x =
-      distance.x > 0
-        ? Math.min(component.container.x + speed, toCoordinates.x)
-        : Math.max(component.container.x - speed, toCoordinates.x);
-    component.container.y =
-      distance.y > 0
-        ? Math.min(component.container.y + speed, toCoordinates.y)
-        : Math.max(component.container.y - speed, toCoordinates.y);
-
-    if (
-      component.container.x === toCoordinates.x &&
-      component.container.y === toCoordinates.y
-    ) {
-      this.movementAnimation.route.shift();
-      if (this.movementAnimation.route.length === 0) {
-        this.movementAnimation.onEnd();
-        this.movementAnimation = null;
-      }
-    }
+    this.animationManager.update(deltaTime);
   }
 }

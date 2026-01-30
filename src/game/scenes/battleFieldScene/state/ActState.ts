@@ -12,6 +12,7 @@ export class ActState extends BattleFieldSceneState {
   position: Position;
   target?: UnitEntity;
   range: RangeEntity;
+  isActing = false;
 
   constructor({
     env,
@@ -63,10 +64,9 @@ export class ActState extends BattleFieldSceneState {
   }
 
   override selectCell() {
-    // TODO: 戦闘中ロック
-    // if (this.env.scene.isAnimating) {
-    //   return;
-    // }
+    if (this.isActing) {
+      return;
+    }
     const position = this.env.scene.cursor.position;
     if (this.range.isActable(position) && this.target) {
       this.act();
@@ -82,12 +82,15 @@ export class ActState extends BattleFieldSceneState {
     if (!target) {
       return;
     }
+    this.isActing = true;
     this.range.hideRange();
     unit.changePosition(this.position);
     const actionPrediction = this.getActionPrediction({
       from: unit,
       to: target,
     });
+
+    // メイン行動
     target.changeHp(target.currentHp + (actionPrediction.from.effect ?? 0));
     if (unit.isHealer) {
       target.component.animateHeal();
@@ -98,6 +101,7 @@ export class ActState extends BattleFieldSceneState {
 
     // 反撃
     if (
+      // TODO: ユニット生存判定
       !unit.isHealer &&
       !target.isHealer &&
       actionPrediction.to.effect !== null
@@ -109,6 +113,7 @@ export class ActState extends BattleFieldSceneState {
 
     // 行動終了
     this.standBy();
+    this.isActing = false;
   }
 
   private standBy() {
