@@ -60,17 +60,8 @@ export class Game {
       backgroundColor: "#222",
     });
     this.app.stage.x = this.app.screen.width / 2;
-    this.setAnimationTicker();
-  }
-
-  private setAnimationTicker() {
-    let frame = 0;
-    this.app.ticker.add((time) => {
-      frame += time.deltaTime;
-      if (frame > 60) {
-        frame -= 60;
-      }
-      this.scene.animate({ deltaTime: time.deltaTime, frame });
+    this.app.ticker.add(({ deltaTime }) => {
+      this.scene.animate(deltaTime);
     });
   }
 }

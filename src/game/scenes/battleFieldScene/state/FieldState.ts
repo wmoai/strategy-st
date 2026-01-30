@@ -37,9 +37,6 @@ export class FieldState extends BattleFieldSceneState {
   }
 
   override selectCell() {
-    if (this.env.scene.isAnimating) {
-      return;
-    }
     const unit = this.hoveredUnit;
     if (unit && !unit.isActed) {
       this.focusUnit(unit);
@@ -55,7 +52,7 @@ export class FieldState extends BattleFieldSceneState {
         env: this.env,
         focusedUnit: unit,
         hoveredUnit: this.hoveredUnit,
-      })
+      }),
     );
   }
 

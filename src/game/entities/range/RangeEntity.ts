@@ -11,6 +11,7 @@ export class RangeEntity {
   isHealer: boolean;
   rangeCells: RangeCell[][];
   container: Container;
+  frame: number = 0;
 
   constructor({
     unitData,
@@ -57,7 +58,7 @@ export class RangeEntity {
         (rangeCell) =>
           rangeCell.position.x === x &&
           rangeCell.position.y === y &&
-          rangeCell.movable
+          rangeCell.movable,
       );
   }
 
@@ -68,7 +69,7 @@ export class RangeEntity {
         (rangeCell) =>
           rangeCell.position.x === x &&
           rangeCell.position.y === y &&
-          rangeCell.actable
+          rangeCell.actable,
       );
   }
 
@@ -82,7 +83,7 @@ export class RangeEntity {
     while (true) {
       const current = flatRanges.find(
         (item) =>
-          item.position.x === currentPos.x && item.position.y === currentPos.y
+          item.position.x === currentPos.x && item.position.y === currentPos.y,
       );
       if (!current || !current.movablePrev) {
         break;
@@ -94,10 +95,12 @@ export class RangeEntity {
     return result;
   }
 
-  animate(frame: number) {
+  animate(deltaTime: number) {
+    this.frame = (this.frame + deltaTime) % 60;
     if (this.container.children.length === 0) {
       return;
     }
-    this.container.alpha = 0.8 + (Math.sin(frame * (Math.PI / 30)) + 1) / 10;
+    this.container.alpha =
+      0.8 + (Math.sin(this.frame * (Math.PI / 30)) + 1) / 10;
   }
 }

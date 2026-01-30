@@ -63,9 +63,10 @@ export class ActState extends BattleFieldSceneState {
   }
 
   override selectCell() {
-    if (this.env.scene.isAnimating) {
-      return;
-    }
+    // TODO: 戦闘中ロック
+    // if (this.env.scene.isAnimating) {
+    //   return;
+    // }
     const position = this.env.scene.cursor.position;
     if (this.range.isActable(position) && this.target) {
       this.act();
@@ -93,19 +94,21 @@ export class ActState extends BattleFieldSceneState {
     } else {
       target.component.animateBurst();
     }
-    await wait(800);
+    await wait(600);
+
+    // 反撃
     if (
-      unit.isHealer ||
-      target.isHealer ||
-      actionPrediction.to.effect === null
+      !unit.isHealer &&
+      !target.isHealer &&
+      actionPrediction.to.effect !== null
     ) {
-      return;
+      unit.changeHp(unit.currentHp + (actionPrediction.to.effect ?? 0));
+      unit.component.animateBurst();
+      await wait(600);
     }
-    unit.changeHp(unit.currentHp + (actionPrediction.to.effect ?? 0));
-    unit.component.animateBurst();
-    await wait(800);
-    this.unit.standBy(this.position);
-    // TODO: change state
+
+    // 行動終了
+    this.standBy();
   }
 
   private standBy() {
@@ -190,7 +193,7 @@ export class ActState extends BattleFieldSceneState {
     };
   }
 
-  animate(frame: number) {
-    this.range.animate(frame);
+  animate(deltaTime: number) {
+    this.range.animate(deltaTime);
   }
 }

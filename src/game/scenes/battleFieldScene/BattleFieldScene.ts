@@ -6,7 +6,6 @@ import { CursorEntity } from "@/game/entities/cursor/CursorEntity";
 import { FieldEntity } from "@/game/entities/field/FieldEntity";
 import { UnitEntity } from "@/game/entities/unit/UnitEntity";
 import type { Game } from "@/game/main/Game";
-import type { Animation } from "@/game/types";
 
 import type { BattleFieldSceneState } from "./state/BattleFieldSceneState";
 import { FieldState } from "./state/FieldState";
@@ -23,10 +22,6 @@ export class BattleFieldScene {
     range: new Container(),
     activeUnit: new RenderLayer(),
   };
-  animationQue: Array<{
-    animations: Animation[];
-    onEnd?: () => void;
-  }> = [];
   private state?: BattleFieldSceneState;
   turn: "offense" | "defense" = "defense";
 
@@ -92,31 +87,9 @@ export class BattleFieldScene {
     });
   }
 
-  animate({ deltaTime, frame }: { deltaTime: number; frame: number }) {
-    this.cursor.animate(frame);
-    this.state?.animate(frame);
-    this.animateByQue(deltaTime);
-  }
-
-  private animateByQue(deltaTime: number) {
-    if (this.animationQue.length === 0) {
-      return;
-    }
-    const { animations, onEnd } = this.animationQue[0];
-    const animation = animations[0];
-    if (animation) {
-      animation.update(deltaTime);
-      if (animation.isFinished()) {
-        animations.shift();
-      }
-    } else {
-      onEnd?.();
-      this.animationQue.shift();
-    }
-  }
-
-  get isAnimating() {
-    return this.animationQue.length > 0;
+  animate(deltaTime: number) {
+    this.cursor.animate(deltaTime);
+    this.state?.animate(deltaTime);
   }
 
   findUnitFromPosition({ x, y }: Position) {

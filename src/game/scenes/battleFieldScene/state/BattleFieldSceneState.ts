@@ -20,5 +20,5 @@ export abstract class BattleFieldSceneState {
 
   abstract selectCell(): void;
 
-  abstract animate(frame: number): void;
+  abstract animate(deltaTime: number): void;
 }

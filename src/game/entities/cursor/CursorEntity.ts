@@ -6,6 +6,7 @@ import { cellSize } from "@/game/constants";
 export class CursorEntity {
   private _position: Position = { x: 0, y: 0 };
   readonly graphic: Graphics;
+  frame: number = 0;
 
   constructor() {
     const left = 0;
@@ -50,14 +51,14 @@ export class CursorEntity {
     this.graphic.y = y * cellSize + cellSize / 2 + 1;
   }
 
-  animate(frame: number) {
-    const totalFrame = 60;
-    const note16 = totalFrame / 16;
-    if (frame < note16) {
+  animate(deltaTime: number) {
+    this.frame = (this.frame + deltaTime) % 60;
+    const note16 = 60 / 16;
+    if (this.frame < note16) {
       this.graphic.scale = 1.1;
-    } else if (frame < note16 * 8) {
+    } else if (this.frame < note16 * 8) {
       this.graphic.scale = 1.2;
-    } else if (frame < note16 * 9) {
+    } else if (this.frame < note16 * 9) {
       this.graphic.scale = 1.1;
     } else {
       this.graphic.scale = 1;

@@ -2,8 +2,6 @@ import type { Position } from "@/data/fieldData";
 import { findKlass, type KlassData } from "@/data/klassData";
 import type { TerrainData } from "@/data/terrainData";
 import { findUnitData, type UnitData, type UnitId } from "@/data/unitData";
-import { cellSize } from "@/game/constants";
-import type { Animation } from "@/game/types";
 
 import { UnitComponent } from "./UnitComponent";
 
@@ -116,38 +114,5 @@ export class UnitEntity {
     }
     const rate = this.data.skl * 10;
     return Math.min(Math.max(Math.floor(rate), 0), 100);
-  }
-
-  createMoveAnimations(route: Position[]) {
-    const animations = route.map<Animation>((to) => {
-      const endCoordinates = {
-        x: to.x * cellSize,
-        y: to.y * cellSize,
-      };
-      return {
-        update: (deltaTime: number) => {
-          const distance = {
-            x: endCoordinates.x - this.container.x,
-            y: endCoordinates.y - this.container.y,
-          };
-          const speed = deltaTime * 8;
-          this.container.x =
-            distance.x > 0
-              ? Math.min(this.container.x + speed, endCoordinates.x)
-              : Math.max(this.container.x - speed, endCoordinates.x);
-          this.container.y =
-            distance.y > 0
-              ? Math.min(this.container.y + speed, endCoordinates.y)
-              : Math.max(this.container.y - speed, endCoordinates.y);
-        },
-        isFinished: () => {
-          return (
-            this.container.x === endCoordinates.x &&
-            this.container.y === endCoordinates.y
-          );
-        },
-      };
-    });
-    return animations;
   }
 }

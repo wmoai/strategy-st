@@ -1,4 +1,5 @@
 import type { Position } from "@/data/fieldData";
+import { cellSize } from "@/game/constants";
 import { RangeEntity } from "@/game/entities/range/RangeEntity";
 import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
@@ -11,6 +12,10 @@ export class FocusState extends BattleFieldSceneState {
   focusedUnit: UnitEntity;
   hoveredUnit?: UnitEntity;
   range: RangeEntity;
+  movementAnimation: {
+    route: Position[];
+    onEnd: () => void;
+  } | null = null;
 
   constructor({
     env,
@@ -39,7 +44,7 @@ export class FocusState extends BattleFieldSceneState {
       position: focusedUnit.position,
       fieldData: env.scene.field.data,
       noEntries,
-      forceMove: Infinity, // debug
+      forceMove: Infinity, // FIXME: debug
     });
   }
 
@@ -53,7 +58,7 @@ export class FocusState extends BattleFieldSceneState {
   }
 
   override moveCursor({ position }: { position: Position }) {
-    if (this.env.scene.isAnimating) {
+    if (this.isMoveAnimating) {
       return;
     }
     super.moveCursor({ position });
@@ -62,7 +67,7 @@ export class FocusState extends BattleFieldSceneState {
   }
 
   override selectCell() {
-    if (this.env.scene.isAnimating) {
+    if (this.isMoveAnimating) {
       return;
     }
     const position = this.env.scene.cursor.position;
@@ -80,12 +85,16 @@ export class FocusState extends BattleFieldSceneState {
     }
   }
 
+  private get isMoveAnimating() {
+    return this.movementAnimation !== null;
+  }
+
   private changeFocusUnit(unit: UnitEntity) {
     this.env.scene.changeState(
       new FocusState({
         env: this.env,
         focusedUnit: unit,
-      })
+      }),
     );
   }
 
@@ -96,10 +105,8 @@ export class FocusState extends BattleFieldSceneState {
     unit: UnitEntity;
     position: Position;
   }) {
-    const route = this.range.routeTo(position);
-    this.env.scene.layer.activeUnit.attach(unit.container);
-    this.env.scene.animationQue.push({
-      animations: unit.createMoveAnimations(route),
+    this.movementAnimation = {
+      route: this.range.routeTo(position),
       onEnd: () => {
         this.env.scene.layer.activeUnit.detach(unit.container);
         this.env.scene.changeState(
@@ -107,10 +114,11 @@ export class FocusState extends BattleFieldSceneState {
             env: this.env,
             unit,
             position,
-          })
+          }),
         );
       },
-    });
+    };
+    this.env.scene.layer.activeUnit.attach(unit.container);
     this.range.hideRange();
   }
 
@@ -118,11 +126,48 @@ export class FocusState extends BattleFieldSceneState {
     this.env.scene.changeState(
       new FieldState({
         env: this.env,
-      })
+      }),
     );
   }
 
-  animate(frame: number) {
-    this.range.animate(frame);
+  animate(deltaTime: number) {
+    this.range.animate(deltaTime);
+    this.animateMove(deltaTime);
+  }
+
+  private animateMove(deltaTime: number) {
+    if (!this.movementAnimation) {
+      return;
+    }
+    const toPosition = this.movementAnimation.route[0];
+    const toCoordinates = {
+      x: toPosition.x * cellSize,
+      y: toPosition.y * cellSize,
+    };
+    const { component } = this.focusedUnit;
+    const distance = {
+      x: toCoordinates.x - component.container.x,
+      y: toCoordinates.y - component.container.y,
+    };
+    const speed = deltaTime * 8;
+    component.container.x =
+      distance.x > 0
+        ? Math.min(component.container.x + speed, toCoordinates.x)
+        : Math.max(component.container.x - speed, toCoordinates.x);
+    component.container.y =
+      distance.y > 0
+        ? Math.min(component.container.y + speed, toCoordinates.y)
+        : Math.max(component.container.y - speed, toCoordinates.y);
+
+    if (
+      component.container.x === toCoordinates.x &&
+      component.container.y === toCoordinates.y
+    ) {
+      this.movementAnimation.route.shift();
+      if (this.movementAnimation.route.length === 0) {
+        this.movementAnimation.onEnd();
+        this.movementAnimation = null;
+      }
+    }
   }
 }
