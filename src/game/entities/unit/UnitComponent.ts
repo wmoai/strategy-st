@@ -1,14 +1,12 @@
 import { Container, Graphics, Sprite } from "pixi.js";
 
 import type { UnitData } from "@/data/unitData";
-import { cellSize } from "@/game/constants";
+import { cellSize, hpBarWidth } from "@/game/constants";
 
 import { BurstAnimation } from "./BurstAnimation";
 import { HealAnimation } from "./HealAnimation";
 import { KlassSpriteSheet } from "./KlassSpriteSheet";
 import type { UnitState } from "./UnitEntity";
-
-const hpBarWidth = cellSize - 4;
 
 export class UnitComponent {
   private readonly unitData: UnitData;
@@ -70,8 +68,6 @@ export class UnitComponent {
       state.position.y * cellSize,
     );
   }
-
-  animateHpBar(hp: number) {}
 
   animateBurst() {
     const animation = BurstAnimation.createAnimatedSprite();

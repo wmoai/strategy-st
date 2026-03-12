@@ -1,5 +1,4 @@
 import type { Position } from "@/data/fieldData";
-import { cellSize } from "@/game/constants";
 import { RangeEntity } from "@/game/entities/range/RangeEntity";
 import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 
@@ -7,7 +6,7 @@ import { BattleFieldSceneState } from "./BattleFieldSceneState";
 import type { BattleFieldSceneEnv } from "../types";
 import { ActState } from "./ActState";
 import { FieldState } from "./FieldState";
-import { AnimationManager, type Animation } from "../AnimationManager";
+import { AnimationManager } from "../AnimationManager";
 
 export class FocusState extends BattleFieldSceneState {
   focusedUnit: UnitEntity;
@@ -103,52 +102,8 @@ export class FocusState extends BattleFieldSceneState {
     this.range.hideRange();
 
     const route = this.range.routeTo(position);
-    const animations: Animation[] = route.map((nextPosition) => {
-      const toCoordinates = {
-        x: nextPosition.x * cellSize,
-        y: nextPosition.y * cellSize,
-      };
-
-      return {
-        update: (deltaTime: number) => {
-          const { component } = this.focusedUnit;
-          const distance = {
-            x: toCoordinates.x - component.container.x,
-            y: toCoordinates.y - component.container.y,
-          };
-          const movingDistance = deltaTime * 8;
-          component.container.x =
-            distance.x > 0
-              ? Math.min(
-                  component.container.x + movingDistance,
-                  toCoordinates.x,
-                )
-              : Math.max(
-                  component.container.x - movingDistance,
-                  toCoordinates.x,
-                );
-          component.container.y =
-            distance.y > 0
-              ? Math.min(
-                  component.container.y + movingDistance,
-                  toCoordinates.y,
-                )
-              : Math.max(
-                  component.container.y - movingDistance,
-                  toCoordinates.y,
-                );
-        },
-        isEnd: () => {
-          const { component } = this.focusedUnit;
-          return (
-            component.container.x === toCoordinates.x &&
-            component.container.y === toCoordinates.y
-          );
-        },
-      };
-    });
     this.animationManager.add({
-      animations,
+      animations: this.focusedUnit.createMovingAnimations(route),
       onEnd: () => {
         this.env.scene.layer.activeUnit.detach(unit.container);
         this.env.scene.changeState(

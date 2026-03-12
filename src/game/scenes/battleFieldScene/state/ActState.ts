@@ -4,6 +4,7 @@ import type { UnitEntity } from "@/game/entities/unit/UnitEntity";
 import { wait } from "@/game/utils/wait";
 
 import { BattleFieldSceneState } from "./BattleFieldSceneState";
+import { AnimationManager } from "../AnimationManager";
 import type { ActionPrediction, BattleFieldSceneEnv } from "../types";
 import { FieldState } from "./FieldState";
 
@@ -13,6 +14,7 @@ export class ActState extends BattleFieldSceneState {
   target?: UnitEntity;
   range: RangeEntity;
   isActing = false;
+  animationManager = new AnimationManager();
 
   constructor({
     env,
@@ -91,7 +93,19 @@ export class ActState extends BattleFieldSceneState {
     });
 
     // メイン行動
-    target.changeHp(target.currentHp + (actionPrediction.from.effect ?? 0));
+    // TODO: クリティカル判定
+    const deltaHp = actionPrediction.from.effect ?? 0;
+    this.animationManager.add({
+      animations: [
+        target.createChangingHpBarAnimation({
+          deltaHp: deltaHp,
+          duration: 30,
+        }),
+      ],
+      onEnd: () => {
+        target.changeHp(target.currentHp + deltaHp);
+      },
+    });
     if (unit.isHealer) {
       target.component.animateHeal();
     } else {
@@ -200,5 +214,6 @@ export class ActState extends BattleFieldSceneState {
 
   animate(deltaTime: number) {
     this.range.animate(deltaTime);
+    this.animationManager.update(deltaTime);
   }
 }
