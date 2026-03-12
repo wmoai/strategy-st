@@ -87,9 +87,9 @@ export class BattleFieldScene {
     });
   }
 
-  animate(deltaTime: number) {
+  tick(deltaTime: number) {
     this.cursor.animate(deltaTime);
-    this.state?.animate(deltaTime);
+    this.state?.tick(deltaTime);
   }
 
   findUnitFromPosition({ x, y }: Position) {

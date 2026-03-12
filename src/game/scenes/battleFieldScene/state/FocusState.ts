@@ -125,7 +125,7 @@ export class FocusState extends BattleFieldSceneState {
     );
   }
 
-  animate(deltaTime: number) {
+  tick(deltaTime: number) {
     this.range.animate(deltaTime);
     this.animationManager.update(deltaTime);
   }

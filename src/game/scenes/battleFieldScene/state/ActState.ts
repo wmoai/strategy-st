@@ -107,11 +107,11 @@ export class ActState extends BattleFieldSceneState {
       },
     });
     if (unit.isHealer) {
-      target.component.animateHeal();
+      await target.component.animateHeal();
     } else {
-      target.component.animateBurst();
+      await target.component.animateBurst();
     }
-    await wait(600);
+    await wait(100);
 
     // 反撃
     if (
@@ -121,13 +121,14 @@ export class ActState extends BattleFieldSceneState {
       actionPrediction.to.effect !== null
     ) {
       unit.changeHp(unit.currentHp + (actionPrediction.to.effect ?? 0));
-      unit.component.animateBurst();
-      await wait(600);
+      await unit.component.animateBurst();
+      await wait(100);
     }
 
     // 行動終了
     this.standBy();
     this.isActing = false;
+    // TODO: ターン終了判定
   }
 
   private standBy() {
@@ -212,7 +213,7 @@ export class ActState extends BattleFieldSceneState {
     };
   }
 
-  animate(deltaTime: number) {
+  tick(deltaTime: number) {
     this.range.animate(deltaTime);
     this.animationManager.update(deltaTime);
   }

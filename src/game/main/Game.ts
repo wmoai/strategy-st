@@ -61,7 +61,7 @@ export class Game {
     });
     this.app.stage.x = this.app.screen.width / 2;
     this.app.ticker.add(({ deltaTime }) => {
-      this.scene.animate(deltaTime);
+      this.scene.tick(deltaTime);
     });
   }
 }

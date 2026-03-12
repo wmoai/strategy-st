@@ -56,7 +56,7 @@ export class FieldState extends BattleFieldSceneState {
     );
   }
 
-  animate() {
+  tick() {
     // noop
   }
 }

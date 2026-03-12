@@ -2,20 +2,20 @@ export type Animation = {
   update: (deltaTime: number) => void;
   isEnd(): boolean;
 };
-export type AnimationGroup = {
+export type SequentialAnimation = {
   animations: Animation[];
   onEnd?: () => void;
 };
 
 export class AnimationManager {
-  private animationGroups: AnimationGroup[] = [];
+  private sequentialAnimation: SequentialAnimation[] = [];
 
-  add(animationGroup: AnimationGroup) {
-    this.animationGroups.push(animationGroup);
+  add(sequentialAnimation: SequentialAnimation) {
+    this.sequentialAnimation.push(sequentialAnimation);
   }
 
   update(deltaTime: number) {
-    this.animationGroups.forEach((animationGroup) => {
+    this.sequentialAnimation.forEach((animationGroup) => {
       const animation = animationGroup.animations[0];
       animation.update(deltaTime);
       if (animation.isEnd()) {
@@ -25,12 +25,12 @@ export class AnimationManager {
         }
       }
     });
-    this.animationGroups = this.animationGroups.filter(
+    this.sequentialAnimation = this.sequentialAnimation.filter(
       (animationGroup) => animationGroup.animations.length > 0,
     );
   }
 
   get isAnimating() {
-    return this.animationGroups.length > 0;
+    return this.sequentialAnimation.length > 0;
   }
 }
