@@ -98,7 +98,7 @@ export class ActState extends BattleFieldSceneState {
     this.animationManager.add({
       animations: [
         target.createChangingHpBarAnimation({
-          deltaHp: deltaHp,
+          deltaHp,
           duration: 30,
         }),
       ],
@@ -107,11 +107,11 @@ export class ActState extends BattleFieldSceneState {
       },
     });
     if (unit.isHealer) {
-      await target.component.animateHeal();
+      target.component.animateHeal();
     } else {
-      await target.component.animateBurst();
+      target.component.animateBurst();
     }
-    await wait(100);
+    await wait(600);
 
     // 反撃
     if (
@@ -120,9 +120,21 @@ export class ActState extends BattleFieldSceneState {
       !target.isHealer &&
       actionPrediction.to.effect !== null
     ) {
-      unit.changeHp(unit.currentHp + (actionPrediction.to.effect ?? 0));
-      await unit.component.animateBurst();
-      await wait(100);
+      // TODO: クリティカル判定
+      const deltaHp = actionPrediction.to.effect ?? 0;
+      this.animationManager.add({
+        animations: [
+          unit.createChangingHpBarAnimation({
+            deltaHp,
+            duration: 30,
+          }),
+        ],
+        onEnd: () => {
+          unit.changeHp(unit.currentHp + deltaHp);
+        },
+      });
+      unit.component.animateBurst();
+      await wait(600);
     }
 
     // 行動終了

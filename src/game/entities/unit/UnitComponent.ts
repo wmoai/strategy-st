@@ -70,43 +70,37 @@ export class UnitComponent {
   }
 
   animateBurst() {
-    return new Promise<void>((resolve) => {
-      const animation = BurstAnimation.createAnimatedSprite();
-      animation.x = cellSize / 2;
-      animation.y = cellSize / 2;
-      animation.width = cellSize * 3;
-      animation.height = cellSize * 3;
-      animation.anchor.set(0.5);
-      animation.animationSpeed = 0.5;
-      animation.loop = false;
-      animation.onComplete = () => {
-        this.container.removeChild(animation);
-        animation.destroy();
-        resolve();
-      };
-      this.container.addChild(animation);
-      animation.play();
-    });
+    const animation = BurstAnimation.createAnimatedSprite();
+    animation.x = cellSize / 2;
+    animation.y = cellSize / 2;
+    animation.width = cellSize * 3;
+    animation.height = cellSize * 3;
+    animation.anchor.set(0.5);
+    animation.animationSpeed = 0.5;
+    animation.loop = false;
+    animation.onComplete = () => {
+      this.container.removeChild(animation);
+      animation.destroy();
+    };
+    this.container.addChild(animation);
+    animation.play();
   }
 
   animateHeal() {
-    return new Promise<void>((resolve) => {
-      const animation = HealAnimation.createAnimatedSprite();
-      animation.x = cellSize / 2;
-      animation.y = cellSize / 4;
-      animation.width = cellSize * 1.5;
-      animation.height = cellSize * 1.5;
-      animation.anchor.set(0.5);
-      animation.animationSpeed = 0.3;
-      animation.loop = false;
-      animation.blendMode = "add";
-      animation.onComplete = () => {
-        this.container.removeChild(animation);
-        animation.destroy();
-        resolve();
-      };
-      this.container.addChild(animation);
-      animation.play();
-    });
+    const animation = HealAnimation.createAnimatedSprite();
+    animation.x = cellSize / 2;
+    animation.y = cellSize / 4;
+    animation.width = cellSize * 1.5;
+    animation.height = cellSize * 1.5;
+    animation.anchor.set(0.5);
+    animation.animationSpeed = 0.3;
+    animation.loop = false;
+    animation.blendMode = "add";
+    animation.onComplete = () => {
+      this.container.removeChild(animation);
+      animation.destroy();
+    };
+    this.container.addChild(animation);
+    animation.play();
   }
 }
